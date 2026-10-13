@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6. Sınıf Bilişim Teknolojileri - Akıllı Ders Portalı | Çağatay ERTÜRK</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --bg: #f8fafc;
+      --sidebar-bg: #ffffff;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --danger-bg: #fef2f2;
+      --danger-text: #b91c1c;
+      --holiday-bg: #fefce8;
+      --holiday-text: #a16207;
+      --note-bg: #fffbeb;
+      --note-border: #f59e0b;
+      --video-bg: #f0fdf4;
+      --video-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    body { display: flex; height: 100vh; background-color: var(--bg); color: var(--text-main); overflow: hidden; }
+
+    /* Yan Menü (Sidebar) */
+    aside {
+      width: 320px;
+      min-width: 300px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .sidebar-header {
+      padding: 18px 20px;
+      background: var(--primary);
+      color: white;
+    }
+    .sidebar-header h1 { font-size: 1.15rem; font-weight: 700; }
+    .sidebar-header p { font-size: 0.8rem; opacity: 0.9; margin-top: 2px; }
+    .sidebar-header .teacher-badge {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .week-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      list-style: none;
+    }
+    .week-item {
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 6px;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .week-item:hover { background: #f1f5f9; }
+    .week-item.active { background: #eff6ff; border-color: var(--primary); }
+    .week-item .title { font-weight: 600; font-size: 0.9rem; color: #0f172a; }
+    .week-item .dates { font-size: 0.75rem; color: var(--text-muted); }
+    .badge {
+      display: inline-block;
+      align-self: flex-start;
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .badge-exam { background: #fee2e2; color: #b91c1c; }
+    .badge-holiday { background: #fef3c7; color: #92400e; }
+
+    /* Ana Alan */
+    main {
+      flex: 1;
+      padding: 24px 32px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .banner {
+      background: white;
+      padding: 18px 24px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+    .banner h2 { font-size: 1.35rem; color: #0f172a; margin-bottom: 6px; }
+    .banner .meta { display: flex; gap: 15px; font-size: 0.85rem; color: var(--text-muted); }
+    .banner .topic { margin-top: 6px; font-weight: 600; color: var(--primary); }
+
+    /* Bölüm Başlıkları ve Kart Yapıları */
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    
+    /* Konu Özeti Kartı */
+    .summary-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      line-height: 1.5;
+      font-size: 0.94rem;
+      color: #334155;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    /* Deftere Yazdırılacak Not Kutusu */
+    .notebook-card {
+      background: var(--note-bg);
+      border: 1px dashed var(--note-border);
+      border-left: 5px solid var(--note-border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      position: relative;
+    }
+    .notebook-card .badge-notebook {
+      display: inline-block;
+      background: var(--note-border);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .notebook-card ul {
+      margin-left: 20px;
+      margin-top: 6px;
+      font-size: 0.92rem;
+      color: #78350f;
+      line-height: 1.5;
+    }
+
+    /* Zenginleştirilmiş İçerik (Video) Kutusu */
+    .media-card {
+      background: var(--video-bg);
+      border: 1px solid var(--video-border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+    .media-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .media-title { font-weight: 700; font-size: 0.95rem; color: #166534; }
+    .media-desc { font-size: 0.83rem; color: #15803d; }
+    .btn-video {
+      background: #16a34a;
+      color: white;
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s;
+    }
+    .btn-video:hover { background: #15803d; }
+
+    /* Sorular Wrapper */
+    .questions-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .question-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .q-header {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .q-number {
+      background: #e0e7ff;
+      color: #3730a3;
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .q-text { font-size: 0.93rem; font-weight: 500; color: #1e293b; line-height: 1.4; }
+
+    details {
+      margin-top: 6px;
+      border-top: 1px dashed var(--border);
+      padding-top: 6px;
+    }
+    summary {
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--primary);
+      list-style: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary:hover { color: var(--primary-dark); }
+    summary::before { content: '👉'; }
+    details[open] summary::before { content: '👇'; }
+    .answer-box {
+      margin-top: 6px;
+      padding: 8px 12px;
+      background: #fef2f2;
+      border-left: 3px solid #ef4444;
+      color: #991b1b;
+      font-weight: 600;
+      font-size: 0.88rem;
+      border-radius: 0 4px 4px 0;
+    }
+
+    /* Tatil & Sınav Bilgilendirme Kutusu */
+    .special-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      margin-top: 15px;
+    }
+    .special-card.holiday { background: var(--holiday-bg); border-color: #fde047; }
+    .special-card.exam { background: var(--danger-bg); border-color: #fca5a5; }
+    .special-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+    .special-desc { font-size: 0.95rem; color: #475569; }
+
+    /* Footer */
+    .footer-note {
+      margin-top: auto;
+      text-align: center;
+      padding: 16px 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Yan Menü -->
+  <aside>
+    <div class="sidebar-header">
+      <h1>Bilişim Teknolojileri 6</h1>
+      <p>Haftalık Konu, Not & Soru Portalı</p>
+      <div class="teacher-badge">👨‍🏫 Çağatay ERTÜRK</div>
+    </div>
+    <ul class="week-list" id="weekList"></ul>
+  </aside>
+
+  <!-- Ana İçerik -->
+  <main id="mainContent">
+    <div class="banner" id="banner">
+      <h2 id="weekTitle">Yükleniyor...</h2>
+      <div class="meta">
+        <span id="weekDate"></span>
+        <span id="weekUnit"></span>
+      </div>
+      <div class="topic" id="weekTopic"></div>
+    </div>
+
+    <div id="contentBody" style="display:flex; flex-direction:column; gap:16px;"></div>
+
+    <div class="footer-note">
+      Bilişim Teknolojileri ve Yazılım Dersi &bull; <strong>Çağatay ERTÜRK</strong>
+    </div>
+  </main>
+
+  <script>
+    const weeksData = [
+      {
+        id: 1,
+        title: "1. Hafta",
+        dates: "14 - 20 Eylül",
+        unit: "Bilişim Teknolojilerinin Hayatımızdaki Yeri",
+        topic: "Yenilikçi Bilişim Teknolojileri",
+        type: "lesson",
+        summary: "Bu hafta günlük hayatımızı kolaylaştıran nesnelerin interneti (IoT), akıllı ev sistemleri, giyilebilir teknolojiler (akıllı saatler) ve sürücüsüz araçlar gibi çağdaş bilişim teknolojilerini inceledik.",
+        notebookNote: [
+          "<b>Yenilikçi Teknoloji:</b> İnsan hayatını kolaylaştıran en güncel dijital araçlardır.",
+          "<b>Giyilebilir Teknolojiler:</b> Vücuda takılabilen akıllı cihazlardır (Örn: Akıllı saatler, bileklikler).",
+          "<b>Nesnelerin İnterneti (IoT):</b> Cihazların internet üzerinden birbiriyle iletişim kurmasıdır (Örn: Robot süpürgeler, akıllı lambalar)."
+        ],
+        mediaTitle: "Nesnelerin İnterneti ve Akıllı Cihazlar Nedir?",
+        mediaDesc: "TRT Çocuk / EBA seviyesine uygun, akıllı cihazları tanıtan animasyon video.",
+        mediaUrl: "https://www.youtube.com/results?search_query=eba+nesnelerin+interneti+animasyon",
+        questions: [
+          { q: "Son yıllarda hayatımıza giren ve insan hayatını kolaylaştıran yeni teknolojilere genel olarak ne ad verilir?", a: "Yenilikçi bilişim teknolojileri." },
+          { q: "Akıllı saat veya bileklik gibi vücuda takılabilen teknolojik aygıtlara ne isim verilir?", a: "Giyilebilir teknoloji." },
+          { q: "Evdeki lambaları, klimayı ve süpürgeleri telefonla uzaktan kontrol etmemizi sağlayan akıllı sisteme ne denir?", a: "Akıllı ev sistemleri (veya Nesnelerin İnterneti / IoT)." },
+          { q: "İnsan müdahalesi olmadan kendi sensörleri ve yazılımıyla yol alabilen otomobillere ne ad verilir?", a: "Otonom (Sürücüsüz) araçlar." },
+          { q: "Yenilikçi teknolojilerin sağlık alanında sağladığı faydalara bir örnek veriniz.", a: "Akıllı saatlerin nabız/adım ölçmesi veya uzaktan hasta takibi." }
+        ]
+      },
+      {
+        id: 2,
+        title: "2. Hafta",
+        dates: "21 - 27 Eylül",
+        unit: "Bilişim Teknolojilerinin Hayatımızdaki Yeri",
+        topic: "Bilişim Teknolojilerinin Geleceği",
+        type: "lesson",
+        summary: "Bilgisayarların geçmişten bugüne gelişim çizgisini inceledik. Gelecekte robotik sistemler, sanal/artırılmış gerçeklik ve uzay bilişiminin hayatımıza etkilerini değerlendirdik.",
+        notebookNote: [
+          "Bilgisayarlar geçmişe kıyasla fiziksel olarak <b>küçülmüş</b>, hız ve depolama kapasiteleri katbekat <b>artmıştır</b>.",
+          "Gelecekte tıp (uzaktan ameliyat), ulaşım (uçan otonom araçlar) ve eğitim (VR gözlüklerle sınıf ortamı) alanında büyük yenilikler beklenmektedir.",
+          "Yeni teknolojiler bazı meslekleri bitirirken yapay zekâ uzmanlığı, yazılımcılık gibi yeni alanlar doğurmaktadır."
+        ],
+        mediaTitle: "Geleceğin Teknolojileri ve Bilişim Dünyası",
+        mediaDesc: "Gelecekte bizi bekleyen meslekler ve bilişim vizyonu anlatımı.",
+        mediaUrl: "https://www.youtube.com/results?search_query=gelecegin+teknolojileri+ortaokul+bilisim",
+        questions: [
+          { q: "Geçmişten günümüze bilgisayarların fiziksel boyutu ve işlem hızı nasıl değişmiştir?", a: "Boyutları küçülmüş, çalışma hızları ve işlem kapasiteleri büyük oranda artmıştır." },
+          { q: "Gelecekte eğitim alanında derslerin daha etkileşimli işlenmesini sağlayacak teknolojiye bir örnek veriniz.", a: "Sanal gerçeklik (VR) veya artırılmış gerçeklik (AR) gözlükleri." },
+          { q: "Hastanelerde cerrahların kilometrelerce uzaktaki bir hastayı ameliyat etmesine imkân tanıyan geleceğin teknolojisi nedir?", a: "Robotik cerrahi / Uzaktan ameliyat sistemleri." },
+          { q: "Teknolojinin hızla gelişmesinin iş ve meslek hayatına olası bir etkisini yazınız.", a: "Bazı geleneksel mesleklerin kaybolması, robotik/yazılım gibi yeni mesleklerin ortaya çıkması." },
+          { q: "Gelecekte uçan araçlar ve otonom toplu taşıma araçlarının yaygınlaşması en çok hangi alanı etkiler?", a: "Ulaşım ve trafik alanını." }
+        ]
+      },
+      {
+        id: 3,
+        title: "3. Hafta",
+        dates: "28 Eylül - 04 Ekim",
+        unit: "Dijital Ürün Tasarım ve Geliştirme",
+        topic: "Tablolama Programlarına Giriş",
+        type: "lesson",
+        summary: "Elektronik tablolama kavramı, Excel arayüzü; satır, sütun ve hücre kavramları ile tablolama programlarının kullanım amaçlarını öğrendik.",
+        notebookNote: [
+          "<b>Tablolama Programı:</b> Sayısal verileri düzenlemek, hesaplamak ve grafik çizmek için kullanılır (Örn: Microsoft Excel, Google E-Tablolar).",
+          "<b>Satır:</b> Yatay uzanan ve sayılarla (1, 2, 3...) gösterilen kısımlardır.",
+          "<b>Sütun:</b> Dikey uzanan ve harflerle (A, B, C...) gösterilen kısımlardır.",
+          "<b>Hücre:</b> Satır ve sütunun kesiştiği kutucuktur (Örn: A1 hücresi)."
+        ],
+        mediaTitle: "Excel'e Giriş: Satır, Sütun ve Hücre Nedir?",
+        mediaDesc: "Ortaokul öğrencileri için basit adımlarla Excel temelleri.",
+        mediaUrl: "https://www.youtube.com/results?search_query=ortaokul+excel+giris+dersi",
+        questions: [
+          { q: "Sayısal verileri listelemek, hesaplama yapmak ve grafik çizmek için kullanılan yazılımlara ne ad verilir?", a: "Tablolama programları (Elektronik tablo)." },
+          { q: "Günümüzde en çok bilinen ve kullanılan tablolama programına bir örnek veriniz.", a: "Microsoft Excel (veya LibreOffice Calc / Google E-Tablolar)." },
+          { q: "Tablolama programında satırlar ve sütunların kesişmesiyle oluşan kutucuklara ne denir?", a: "Hücre." },
+          { q: "Excel'de yatay olarak uzanan ve sayılarla (1, 2, 3...) gösterilen alanlara ne ad verilir?", a: "Satır." },
+          { q: "Excel'de dikey olarak uzanan ve harflerle (A, B, C...) gösterilen alanlara ne ad verilir?", a: "Sütun." }
+        ]
+      },
+      {
+        id: 4,
+        title: "4. Hafta",
+        dates: "05 - 11 Ekim",
+        unit: "Dijital Ürün Tasarım ve Geliştirme",
+        topic: "Tablolama: Veri Toplama, Analiz ve Görselleştirme",
+        type: "lesson",
+        summary: "Excel üzerinde matematiksel formüller yazma, =TOPLA ve =ORTALAMA fonksiyonlarını uygulama ve elde edilen verileri sütun/çizgi grafiklerine dönüştürme adımlarını işledik.",
+        notebookNote: [
+          "Tüm Excel formülleri her zaman <b>eşittir (=)</b> işareti ile başlar.",
+          "<b>=TOPLA(A1:A5):</b> Belirtilen aralıktaki tüm sayıları toplar.",
+          "<b>=ORTALAMA(A1:A5):</b> Belirtilen sayıların aritmetik ortalamasını bulur.",
+          "<b>Grafik:</b> Karmaşık sayısal verileri göze hitap eden çizimlere dönüştürür."
+        ],
+        mediaTitle: "Excel Temel Formülleri ve Grafik Oluşturma",
+        mediaDesc: "Eğlenceli örneklerle toplama, ortalama ve sütun grafiği çizimi.",
+        mediaUrl: "https://www.youtube.com/results?search_query=excel+ortaokul+topla+ortalama+grafik",
+        questions: [
+          { q: "Tablolama programında bir formül veya fonksiyon yazmaya başlarken hangi işaretle başlanır?", a: "Eşittir işareti (=)." },
+          { q: "Belirli hücrelerdeki sayıların toplamını hızlıca hesaplamak için hangi formül/fonksiyon kullanılır?", a: "=TOPLA(hücreler)" },
+          { q: "Bir öğrencinin sınav notlarının ortalamasını bulmak için hangi hazır fonksiyon kullanılır?", a: "=ORTALAMA(hücreler)" },
+          { q: "Tablodaki sayısal verileri daha anlaşılır ve görsel kılmak için ne oluşturulur?", a: "Grafik (Sütun/Çizgi/Pasta grafik)." },
+          { q: "Bir sınıftaki öğrencilerin boy uzunluklarını karşılaştırmak için en uygun grafik türü hangisidir?", a: "Sütun grafiği." }
+        ]
+      },
+      {
+        id: 5,
+        title: "5. Hafta",
+        dates: "12 - 18 Ekim",
+        unit: "Dijital Ürün Tasarım ve Geliştirme",
+        topic: "Ses Düzenleme Programlarına Giriş ve Kurgu",
+        type: "lesson",
+        summary: "Audacity programını tanıdık. Ses dosyası uzantılarını (.mp3, .wav), mikrofonla ses kaydı yapmayı ve ses projesi için senaryo kurgulamayı öğrendik.",
+        notebookNote: [
+          "<b>Ses Düzenleme Yazılımı:</b> Sesleri kesmek, kaydetmek ve birleştirmek için kullanılır (Örn: <b>Audacity</b>).",
+          "<b>Kurgu (Senaryo):</b> Ses kaydından önce konuşmaların ve arka plan müziklerinin sırasını belirleyen plandır.",
+          "<b>Yaygın Ses Formatları:</b> .mp3 ve .wav"
+        ],
+        mediaTitle: "Audacity ile Ses Kaydetme ve Düzenlemeye Giriş",
+        mediaDesc: "Çocuklar için Audacity arayüzü ve ses kaydı yapma rehberi.",
+        mediaUrl: "https://www.youtube.com/results?search_query=audacity+dersleri+ortaokul+giris",
+        questions: [
+          { q: "Mikrofonla ses kaydetmek ve sesleri düzenlemek için kullanılan programlara genel olarak ne ad verilir?", a: "Ses düzenleme programları." },
+          { q: "Okullarda ve derslerde yaygın olarak kullanılan ücretsiz ses düzenleme programına bir örnek veriniz.", a: "Audacity." },
+          { q: "Bir ses kaydında arkadan gelen istenmeyen gürültüleri yok etme işlemine ne denir?", a: "Gürültü azaltma (Gürültü temizleme)." },
+          { q: "Bir radyo veya podcast yayınına başlamadan önce seslerin, müziklerin sırasını belirleyen taslağa ne denir?", a: "Ses kurgusu (veya Senaryo / Akış planı)." },
+          { q: "Yaygın olarak kullanılan en temel ses dosyası uzantısına bir örnek veriniz.", a: ".mp3 (veya .wav)." }
+        ]
+      },
+      {
+        id: 6,
+        title: "6. Hafta",
+        dates: "19 - 25 Ekim",
+        unit: "Dijital Ürün Tasarım ve Geliştirme",
+        topic: "Ses Dosyası Geliştirme",
+        type: "lesson",
+        questions: [
+          { q: "Bir ses kaydındaki gereksiz veya hatalı konuşma bölümünü atmak için hangi temel işlem yapılır?", a: "Kırpma / Kesme (Cut / Trim)." },
+          { q: "İki farklı ses dosyasını art arda ya da üst üste ekleme işlemine ne ad verilir?", a: "Ses birleştirme / Miksleme (Mixing)." },
+          { q: "Ses kaydının başında sesin yavaşça yükselerek başlamasını sağlayan efekte ne denir?", a: "Fade In (Girişte yükselme)." },
+          { q: "Ses kaydının sonunda müziğin yavaşça kısılarak bitmesini sağlayan efekte ne denir?", a: "Fade Out (Çıkışta alçalma)." },
+          { q: "Hazırlanan ses projesini dinlenebilir son bir dosya haline dönüştürme işlemine ne denir?", a: "Dışa aktarma (Export)." }
+        ],
+        summary: "Audacity'de ses efektlerini (Fade in / Fade out), gereksiz bölümleri kesmeyi ve birden fazla kanalı miksleyip dışa aktarmayı (Export) uyguladık.",
+        notebookNote: [
+          "<b>Kırpma/Kesme:</b> Hatalı ses bölümlerini atma işlemidir.",
+          "<b>Fade In:</b> Sesin kısık başlayıp yavaşça yükselmesidir.",
+          "<b>Fade Out:</b> Sesin şarkı sonunda yavaşça kısılarak kaybolmasıdır.",
+          "<b>Dışa Aktar (Export):</b> Hazırlanan projeyi .mp3 dosyası haline getirme işlemidir."
+        ],
+        mediaTitle: "Audacity: Ses Kesme ve Efekt Ekleme",
+        mediaDesc: "Arka plan gürültüsü silme ve Fade In/Out efektleri uygulaması.",
+        mediaUrl: "https://www.youtube.com/results?search_query=audacity+ses+kesme+birlestirme+fade"
+      },
+      {
+        id: 7,
+        title: "7. Hafta",
+        dates: "26 Ekim - 01 Kasım",
+        unit: "Dijital Ürün Tasarım ve Geliştirme",
+        topic: "Video Düzenleme Programlarına Giriş ve Kurgu",
+        type: "lesson",
+        summary: "CapCut ve Clipchamp gibi video editörlerini inceledik. Klipleri zaman tüneline yerleştirme, geçiş efekti ekleme ve video kurgu planı oluşturmayı çalıştık.",
+        notebookNote: [
+          "<b>Video Düzenleme Yazılımları:</b> CapCut, Clipchamp, OpenShot.",
+          "<b>Storyboard (Kurgu Planı):</b> Sahnelerin hangi sırayla dizileceğini gösteren taslaktır.",
+          "<b>Geçiş Efekti (Transition):</b> İki video klibi arasındaki yumuşak görsel geçiştir.",
+          "<b>En Yaygın Video Formatı:</b> .mp4"
+        ],
+        mediaTitle: "CapCut / Video Düzenlemeye Giriş",
+        mediaDesc: "Zaman tüneli kullanımı, video kesme ve geçiş efektleri.",
+        mediaUrl: "https://www.youtube.com/results?search_query=capcut+ortaokul+video+duzenleme+dersi",
+        questions: [
+          { q: "Video klipleri kesmek, birleştirmek ve müzik eklemek için kullanılan yazılımlara ne ad verilir?", a: "Video düzenleme programları." },
+          { q: "Günümüzde telefonlarda ve bilgisayarda sıkça kullanılan bir video düzenleme programı yazınız.", a: "CapCut (veya Clipchamp / Movie Maker / OpenShot)." },
+          { q: "Video hazırlamadan önce sahnelerin sırasını kağıt üzerinde veya zihinde planlamaya ne denir?", a: "Video kurgusu (Storyboard / Senaryo)." },
+          { q: "Videoda sahneden sahneye geçerken yumuşak geçiş sağlayan görsel araca ne denir?", a: "Geçiş efekti (Transition)." },
+          { q: "En popüler ve hemen hemen her cihazın açtığı video dosyası uzantısı hangisidir?", a: ".mp4" }
+        ]
+      },
+      {
+        id: 8,
+        title: "8. Hafta",
+        dates: "02 - 08 Kasım",
+        unit: "ÖLÇME VE DEĞERLENDİRME",
+        topic: "1. DÖNEM 1. SINAV HAFTASI",
+        type: "exam",
+        examDesc: "Bu hafta 1. Dönem 1. Ortak Yazılı Sınavı uygulanacaktır. İlk 7 haftanın tüm kazanımlarını kapsayan sınav soruları uygulanır."
+      },
+      {
+        id: 9,
+        title: "9. Hafta",
+        dates: "09 - 15 Kasım",
+        unit: "Dijital Ürün Tasarım / Bilgisayar Ağları",
+        topic: "Video Geliştirme ve İletişim Teknolojileri",
+        type: "lesson",
+        summary: "Videolara altyazı ve Chroma Key (Yeşil Perde) ekleme ile arama motorlarında gelişmiş arama yöntemlerini bir arada ele aldık.",
+        notebookNote: [
+          "<b>Chroma Key:</b> Yeşil perde önünde çekilen görüntünün arkasını değiştirme tekniğidir.",
+          "<b>Tam Eşleşmeli Arama:</b> Arama motorunda kelimeleri çift tırnak <b>(\"kelime\")</b> içine alarak aranır.",
+          "<b>Resmi Siteler:</b> Türkiye'deki devlet kurumları <b>gov.tr</b> uzantısını taşır."
+        ],
+        mediaTitle: "İnternette Doğru Bilgiye Ulaşma ve Gelişmiş Arama",
+        mediaDesc: "Google arama teknikleri ve güvenilir kaynak bulma animasyonu.",
+        mediaUrl: "https://www.youtube.com/results?search_query=eba+internette+dogru+arama+yapma",
+        questions: [
+          { q: "Bir video kaydına altyazı veya açıklama metni eklemenin faydası nedir?", a: "Videonun sessiz izlenmesini veya işitme engellilerin de anlamasını sağlar." },
+          { q: "Videoda yeşil perde (Green Screen) kullanılarak arka planı değiştirme tekniğine ne ad verilir?", a: "Chroma Key (Yeşil ekran efekti)." },
+          { q: "İnternet üzerinde aradığımız bilgiye hızlıca ulaşmamızı sağlayan web sitelerine ne denir?", a: "Arama motoru (Örn: Google, Bing)." },
+          { q: "Arama motorunda arama yaparken kelimeleri tırnak içine (\") almanın amacı nedir?", a: "Kelimelerin aynen o sırayla ve tam eşleşmeyle aranmasını sağlamak." },
+          { q: "Resmi devlet kurumlarının web sitelerinin uzantısı hangisidir?", a: "gov.tr" }
+        ]
+      },
+      {
+        id: 10,
+        title: "10. Hafta",
+        dates: "16 - 22 Kasım",
+        unit: "TATİL",
+        topic: "1. DÖNEM ARA TATİLİ",
+        type: "holiday",
+        holidayDesc: "1. Dönem Ara Tatili nedeniyle bu hafta ders işlenmemektedir. İyi tatiller!"
+      },
+      {
+        id: 11,
+        title: "11. Hafta",
+        dates: "23 - 29 Kasım",
+        unit: "Bilgisayar Ağları ve İletişim",
+        topic: "İletişim Teknolojileri ve İleri Düzey Arama",
+        type: "lesson",
+        summary: "Eş zamanlı (sesli/görüntülü sohbet) ve farklı zamanlı (e-posta/forum) iletişim teknolojilerini, e-postaya dosya ekleme kurallarını ve dosya türüne göre arama yapmayı öğrendik.",
+        notebookNote: [
+          "<b>Eş Zamanlı İletişim:</b> Aynı anda yapılan iletişimdir (Görüntülü arama, canlı ders).",
+          "<b>Farklı Zamanlı İletişim:</b> Mesajın daha sonra yanıtlandığı iletişimdir (E-posta).",
+          "<b>Ek (Attachment):</b> E-postaya iliştirilen dosya, fotoğraf veya ödevdir (Raptiye simgesi).",
+          "<b>Dosya Türü Arama Komutu:</b> filetype:pdf veya filetype:ppt"
+        ],
+        mediaTitle: "E-Posta Nedir ve Nasıl Gönderilir?",
+        mediaDesc: "EBA / TRT Çocuk: E-posta kuralları ve dijital iletişim nezaketi.",
+        mediaUrl: "https://www.youtube.com/results?search_query=eba+e+posta+nasil+kullanilir",
+        questions: [
+          { q: "İnternet üzerinden dijital mektup, belge ve mesaj göndermeye yarayan servise ne ad verilir?", a: "E-posta (E-mail)." },
+          { q: "Aynı anda karşılıklı konuşma veya görüntülü görüşme yapılan iletişim türüne ne ad verilir?", a: "Eş zamanlı (senkron) iletişim." },
+          { q: "E-posta veya forum mesajları gibi mesajın sonradan okunduğu iletişim türüne ne denir?", a: "Farklı zamanlı (asenkron) iletişim." },
+          { q: "Bir e-postaya dosya, resim veya ödev eklemek için kullanılan raptiye simgeli işlemin adı nedir?", a: "Dosya Ekleme (Attachment)." },
+          { q: "İnternette sadece PDF formatındaki dosyaları aramak için arama kutusuna hangi arama komutu yazılır?", a: "filetype:pdf" }
+        ]
+      },
+      {
+        id: 12,
+        title: "12. Hafta",
+        dates: "30 Kasım - 06 Aralık",
+        unit: "Bilgisayar Ağları / Bilişim Etiği",
+        topic: "Etkileşimli Web Araçları ve Bilişim Etiği",
+        type: "lesson",
+        summary: "Bilişim etiği kuralları, siber zorbalık kavramı, internette karşılaşılabilecek bilişim suçları ve siber suçlarla mücadele yollarını inceledik.",
+        notebookNote: [
+          "<b>Bilişim Etiği:</b> Dijital dünyada doğru ve ahlaki davranış kuralları bütünüdür.",
+          "<b>Siber Zorbalık:</b> Dijital ortamda birini kasten üzmek, tehdit etmek veya küçük düşürmektir.",
+          "<b>Bilişim Suçu:</b> Başkasının hesabını çalmak, sistemlere zarar vermektir (Yasal suçtur).",
+          "İhbar için: Emniyet Siber Suçlarla Mücadele Daire Başkanlığı."
+        ],
+        mediaTitle: "Siber Zorbalık Nedir? Nasıl Korunuruz?",
+        mediaDesc: "Gençler ve çocuklar için siber zorbalıkla baş etme animasyonu.",
+        mediaUrl: "https://www.youtube.com/results?search_query=eba+siber+zorbalik+animasyon",
+        questions: [
+          { q: "İnternet ortamında kullanıcıların içerik üretebildiği ve ortak çalıştığı araçlara ne denir?", a: "Etkileşimli Web 2.0 araçları." },
+          { q: "Bilişim ortamında uyulması gereken ahlaki kurallar ve doğruluk ilkelerine ne denir?", a: "Bilişim etiği." },
+          { q: "Bir başkasının şifresini izinsiz almak veya sistemlere zarar vermek yasal olarak ne sayılır?", a: "Bilişim suçu." },
+          { q: "İnternet ortamında bir kişiye hakaret etmek veya küçük düşürücü mesajlar yazmak ne olarak tanımlanır?", a: "Siber zorbalık." },
+          { q: "Sanal ortamda karşılaştığımız bir bilişim suçunu nereye ihbar edebiliriz?", a: "Siber Suçlarla Mücadele Şube Müdürlüğü (veya 112 / Emniyet)." }
+        ]
+      },
+      {
+        id: 13,
+        title: "13. Hafta",
+        dates: "07 - 13 Aralık",
+        unit: "Bilişim Etiği ve Siber Güvenlik",
+        topic: "Telif Hakkı ve Güvenli Siber Ortam",
+        type: "lesson",
+        summary: "Telif hakkı (Copyright ©), korsan yazılım tehlikesi, kaynak gösterme ve tahmin edilmesi zor güçlü parolalar üretme kurallarını ele aldık.",
+        notebookNote: [
+          "<b>Telif Hakkı (©):</b> Bir eserin sahibine ait yasal mülkiyet ve koruma hakkıdır.",
+          "<b>Korsan Yazılım:</b> Lisanssız ve izinsiz kopyalanan tehlikeli yazılımlardır.",
+          "<b>Güçlü Parola Kuralı:</b> En az 8 karakter, büyük-küçük harf, rakam ve sembol (!?#*) barındırmalıdır."
+        ],
+        mediaTitle: "Telif Hakkı Nedir? Neden Önemlidir?",
+        mediaDesc: "EBA Animasyon: Emeğe saygı ve telif hakkı kuralları.",
+        mediaUrl: "https://www.youtube.com/results?search_query=eba+telif+hakki+animasyon",
+        questions: [
+          { q: "Bir kişinin emeğiyle ortaya koyduğu bir eserin yasal koruma hakkına ne denir?", a: "Telif hakkı (Copyright)." },
+          { q: "Telif hakkını belirten ve çember içinde 'C' harfiyle gösterilen simge nedir?", a: "© simgesi." },
+          { q: "İnternetten bir fotoğraf veya yazıyı ödevde kullanırken kaynağını belirtmeye ne denir?", a: "Kaynak gösterme (Atıf yapma)." },
+          { q: "Ücretli ve telifli bir yazılımı izin almadan kopyalayıp ücretsiz dağıtmaya ne denir?", a: "Korsan yazılım." },
+          { q: "Güçlü bir şifre oluştururken en az kaç karakter ve neler bulunmalıdır?", a: "En az 8 karakter; büyük/küçük harf, rakam ve özel işaretler içermelidir." }
+        ]
+      },
+      {
+        id: 14,
+        title: "14. Hafta",
+        dates: "14 - 20 Aralık",
+        unit: "Bilişim Etiği / Yapay Zekâ",
+        topic: "Lisans Türleri ve Yapay Zekâda Verinin Rolü",
+        type: "lesson",
+        summary: "Açık kaynak kodlu (ücretsiz/özgür) yazılımlar ile demo/lisanslı yazılımları kıyasladık. Yapay zekânın öğrenmesi için gereken 'Veri' kavramına giriş yaptık.",
+        notebookNote: [
+          "<b>Açık Kaynak Kodlu Yazılım:</b> Kaynak kodu herkesle paylaşılan, ücretsiz yazılımlardır (Örn: Pardus, Linux).",
+          "<b>Demo / Paylaşımlı Yazılım:</b> Belirli süre veya kısıtlı özellik sunan deneme yazılımlarıdır.",
+          "<b>Yapay Zekâ ve Veri:</b> Yapay zekânın düşünebilmesi için en temel yakıtı <b>veri (data)</b>dir."
+        ],
+        mediaTitle: "Açık Kaynak Kod ve Özgür Yazılım Nedir?",
+        mediaDesc: "Pardus ve açık kaynak kod felsefesi kısa anlatım.",
+        mediaUrl: "https://www.youtube.com/results?search_query=acik+kaynak+kod+nedir+ortaokul",
+        questions: [
+          { q: "Kullanımı, kaynak kodu ve dağıtımı tamamen serbest olan yazılımlara ne denir?", a: "Açık kaynak kodlu (Özgür) yazılım (Örn: Pardus, Linux)." },
+          { q: "Belirli bir süre veya kısıtlı özellikle deneme amacıyla ücretsiz sunulan yazılıma ne denir?", a: "Demo / Paylaşımlı yazılım (Shareware)." },
+          { q: "Yapay zekânın öğrenmesi ve çıkarım yapabilmesi için ihtiyaç duyduğu en temel unsur nedir?", a: "Veri (Data)." },
+          { q: "Yapay zekâ modellerine metin, ses veya görsel olarak verilen bilgilere ne ad verilir?", a: "Girdi (Input / Prompt)." },
+          { q: "Yapay zekânın hatalı veya taraflı sonuç üretmesini engellemek için nasıl veri verilmelidir?", a: "Doğru, güvenilir, tarafsız ve zengin veri seti." }
+        ]
+      },
+      {
+        id: 15,
+        title: "15. Hafta",
+        dates: "21 - 27 Aralık",
+        unit: "Yapay Zekâ",
+        topic: "Yapay Zekâda Verinin Rolü",
+        type: "lesson",
+        summary: "Yapay zekâ algoritmalarının nasıl eğitildiğini (Model Eğitimi), görsel ve metin verilerinin nasıl etiketlendiğini ve doğrulama süreçlerini öğrendik.",
+        notebookNote: [
+          "<b>Model Eğitimi:</b> Bilgisayara binlerce örnek göstererek nesneleri tanıma kabiliyeti kazandırma sürecidir.",
+          "<b>Prompt:</b> Üretken yapay zekâya ne yapacağını söyleyen yazılı komut ve yönlendirmedir.",
+          "<b>Veri Doğrulama:</b> Yapay zekâya verilen bilgilerin tarafsız ve doğru olup olmadığını denetlemektir."
+        ],
+        mediaTitle: "Yapay Zekâ Nasıl Öğrenir? (Makine Öğrenmesi)",
+        mediaDesc: "Çocuklar için yapay zekanın öğrenme prensiplerini anlatan eğlenceli animasyon.",
+        mediaUrl: "https://www.youtube.com/results?search_query=yapay+zeka+nasil+ogrenir+ortaokul",
+        questions: [
+          { q: "Yapay zekâ sisteminin resimdeki bir kediyi tanıyabilmesi için ne yapılması gerekir?", a: "Binlerce kedi fotoğrafı ile eğitilmesi (veri girişi yapılması) gerekir." },
+          { q: "Büyük miktardaki verileri toplayıp işleyen ve yapay zekâyı eğiten sürece ne denir?", a: "Model eğitimi (Makine öğrenmesi süreci)." },
+          { q: "Metin üreten yapay zekâ araçlarına ne tür girdiler (veri) verilir?", a: "Yazılı komutlar (Prompt)." },
+          { q: "İnternetteki her bilgi doğru mudur, yapay zekâya beslenirken ne yapılmalıdır?", a: "Hayır, verinin doğruluğu teyit edilmelidir." },
+          { q: "Yapay zekânın ürettiği bilginin doğruluğunu kontrol etmeye ne denir?", a: "Doğrulama / Teyit etme." }
+        ]
+      },
+      {
+        id: 16,
+        title: "16. Hafta",
+        dates: "28 Aralık - 03 Ocak",
+        unit: "Yapay Zekâ",
+        topic: "Yapay Zekâ Araçları",
+        type: "lesson",
+        summary: "Sohbet robotları (Chatbotlar), görsel üreten yapay zekâ motorları ve sesli yapay zekâ araçlarının doğru ve güvenli kullanımını değerlendirdik.",
+        notebookNote: [
+          "<b>Chatbot (Sohbet Robotu):</b> Metin tabanlı konuşarak soruları yanıtlayan yapay zekâ sistemidir.",
+          "Yapay zekâ araçlarıyla kişisel bilgiler (T.C. no, şifre, açık adres) asla paylaşılmamalıdır.",
+          "Yapay zekâ çıktısı her zaman kontrol edilmeli ve eleştirel gözle incelenmelidir."
+        ],
+        mediaTitle: "Yapay Zekâ Sohbet Botları ve Görsel Üreticiler",
+        mediaDesc: "Yapay zekâ araçlarının doğru ve güvenli kullanımı.",
+        mediaUrl: "https://www.youtube.com/results?search_query=ortaokul+bilisim+yapay+zeka+araclari",
+        questions: [
+          { q: "Kullanıcılarla sohbet edebilen ve soruları yanıtlayan yapay zekâ programlarına ne denir?", a: "Sohbet robotu (Chatbot)." },
+          { q: "Metin yazarak görsel veya resim çizdiren yapay zekâ araçlarına bir örnek veriniz.", a: "Midjourney (veya DALL-E, Bing Image Creator)." },
+          { q: "Yapay zekâ araçlarını kullanırken hangi kişisel bilgilerimizi kesinlikle paylaşmamalıyız?", a: "T.C. kimlik numarası, ev adresi, telefon ve özel şifrelerimiz." },
+          { q: "Yapay zekâ araçlarının bize verdiği her cevabı doğrudan ödeve kopyalamak doğru mudur?", a: "Hayır, kontrol edilmeli ve kendi cümlelerimizle düzenlenmelidir." },
+          { q: "Sesimizi tanıyan akıllı telefon asistanları yapay zekâ aracı mıdır?", a: "Evet (Siri, Google Asistan vb.)." }
+        ]
+      },
+      {
+        id: 17,
+        title: "17. Hafta",
+        dates: "04 - 10 Ocak",
+        unit: "ÖLÇME VE DEĞERLENDİRME",
+        topic: "1. DÖNEM 2. SINAV HAFTASI",
+        type: "exam",
+        examDesc: "Bu hafta 1. Dönem 2. Ortak Yazılı Sınav haftasıdır. Dönem boyunca işlenen tüm konuları kapsayan sınav uygulanır."
+      },
+      {
+        id: 18,
+        title: "18. Hafta",
+        dates: "11 - 17 Ocak",
+        unit: "Yapay Zekâ",
+        topic: "Yapay Zekâ Araçları ile Model Geliştirme",
+        type: "lesson",
+        summary: "Google Teachable Machine aracıyla kendi görüntü ve ses tanıma modellerimizi oluşturma ve test etme adımlarını öğrendik.",
+        notebookNote: [
+          "<b>Teachable Machine:</b> Kod yazmadan kamera veya sesle yapay zekâ modeli eğitebileceğimiz web tabanlı araçtır.",
+          "<b>Aşamalar:</b> 1) Veri Topla -> 2) Modeli Eğit -> 3) Önizle ve Test Et.",
+          "Hatalı tahminleri düzeltmek için daha fazla örnek veri yüklenmelidir."
+        ],
+        mediaTitle: "Teachable Machine ile Kendi Yapay Zekânı Eğit",
+        mediaDesc: "Kamera ile nesne ve el hareketi tanıma modeli yapımı.",
+        mediaUrl: "https://www.youtube.com/results?search_query=teachable+machine+dersi+turkce",
+        questions: [
+          { q: "Kendi kameramızı veya sesimizi kullanarak basit yapay zekâ modeli eğitebildiğimiz Google aracının adı nedir?", a: "Teachable Machine." },
+          { q: "Bir yapay zekâ modelini eğitirken ilk yapılan aşama nedir?", a: "Örnek veri (resim, ses, poz) toplamak." },
+          { q: "Toplanan verilerden sonra modelin öğrenmesi için basılan düğmenin/işlemin adı nedir?", a: "Modeli Eğit (Train Model)." },
+          { q: "Eğitilen modelin doğru çalışıp çalışmadığını anlamak için ne yapılır?", a: "Modeli Test Etme (Önizleme/Test)." },
+          { q: "Model test edilirken yanlış tahmin yaparsa ne yapılmalıdır?", a: "Daha fazla ve farklı örnek veri eklenerek model tekrar eğitilmelidir." }
+        ]
+      },
+      {
+        id: 19,
+        title: "19. Hafta",
+        dates: "18 - 24 Ocak",
+        unit: "Yapay Zekâ",
+        topic: "Yapay Zekâ Araçları ile Model Geliştirme",
+        type: "lesson",
+        summary: "Eğitilen yapay zekâ modelini dışa aktarıp projelerle entegre etmeyi ve akranlarımızla modelin başarı oranını değerlendirmeyi işledik.",
+        notebookNote: [
+          "<b>Model Dışa Aktarma:</b> Eğitilen modeli bir web sitesinde veya Scratch gibi ortamlarda kullanmak için kaydedip indirmektir.",
+          "Farklı ışık ve açılardan alınan veri, modelin başarı oranını yükseltir.",
+          "Kritik alanlarda son karar ve onay her zaman insan denetiminde olmalıdır."
+        ],
+        mediaTitle: "Eğitilen Modeli Scratch ile Kullanma",
+        mediaDesc: "Teachable Machine modelini blok tabanlı projelere bağlama.",
+        mediaUrl: "https://www.youtube.com/results?search_query=teachable+machine+scratch+baglama",
+        questions: [
+          { q: "Geliştirdiğimiz yapay zekâ modelini web sitemizde veya projelerimizde kullanmak için ne yaparız?", a: "Dışa aktarırız (Export Model)." },
+          { q: "Yapay zekâ modeli bir çöp ayrıştırma kutusunda hangi amaçla kullanılabilir?", a: "Kameradaki atığın plastik mi cam mı olduğunu tanımak için." },
+          { q: "Modelin başarısını artırmak için verilerin nasıl olması gerekir?", a: "Farklı açılardan, farklı ışıklarda ve bol sayıda olmalıdır." },
+          { q: "Geliştirdiğimiz modelin sonuçlarını kimlerle değerlendirebiliriz?", a: "Öğretmenimiz ve sınıf arkadaşlarımızla (Akran değerlendirmesi)." },
+          { q: "Yapay zekâ modelleri insan yerine her kararı tek başına vermeli midir?", a: "Hayır, son kontrol ve kritik kararlar insanda olmalıdır." }
+        ]
+      },
+      {
+        id: 20,
+        title: "20. Hafta",
+        dates: "25 - 31 Ocak",
+        unit: "TATİL",
+        topic: "YARIYIL TATİLİ (1. Hafta)",
+        type: "holiday",
+        holidayDesc: "1. Dönem Yarıyıl (Sömestr) Tatili. Dinlenme ve enerji toplama zamanı!"
+      },
+      {
+        id: 21,
+        title: "21. Hafta",
+        dates: "01 - 07 Şubat",
+        unit: "TATİL",
+        topic: "YARIYIL TATİLİ (2. Hafta)",
+        type: "holiday",
+        holidayDesc: "Yarıyıl Tatilinin 2. haftası. 2. döneme hazırlık haftası."
+      },
+      {
+        id: 22,
+        title: "22. Hafta",
+        dates: "08 - 14 Şubat",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Blok Tabanlı Programlama Ortamına Giriş",
+        type: "lesson",
+        summary: "Blok tabanlı kodlamanın mantığını, Scratch arayüzünü, kukla ve sahne bileşenleri ile yeşil bayrağın işlevini öğrendik.",
+        notebookNote: [
+          "<b>Blok Tabanlı Kodlama:</b> Renkli blokları sürükleyip yapboz gibi birleştirerek kod yazma yöntemidir.",
+          "<b>Scratch:</b> Dünyanın en popüler blok kodlama aracıdır.",
+          "<b>Kukla (Sprite):</b> Projedeki karakterlerdir.",
+          "<b>Sahne (Stage):</b> Kuklaların hareket ettiği beyaz arka plan alanıdır.",
+          "<b>Yeşil Bayrak:</b> Projeyi başlatan simgedir."
+        ],
+        mediaTitle: "Scratch Nedir? Scratch Arayüzü Tanıtımı",
+        mediaDesc: "EBA / Scratch temelleri: İlk proje ve kuklaları tanıma.",
+        mediaUrl: "https://www.youtube.com/results?search_query=scratch+nedir+ortaokul+bilisim",
+        questions: [
+          { q: "Kod yazmayı renkli blokları sürükleyip birleştirerek öğreten yazılımlara ne ad verilir?", a: "Blok tabanlı programlama araçları." },
+          { q: "Dünya genelinde okullarda en popüler blok tabanlı kodlama platformu hangisidir?", a: "Scratch (veya mBlock)." },
+          { q: "Scratch programında projenin başladığını belirten yeşil simgenin adı nedir?", a: "Yeşil Bayrak (Tıklandığında)." },
+          { q: "Scratch'te sahnedeki karakterlere (kedi, insan vb.) genel olarak ne ad verilir?", a: "Kukla (Sprite)." },
+          { q: "Kuklaların hareket ettiği beyaz arka plan alanına ne denir?", a: "Sahne (Stage)." }
+        ]
+      },
+      {
+        id: 23,
+        title: "23. Hafta",
+        dates: "15 - 21 Şubat",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Blok Tabanlı Programlama Bileşenleri",
+        type: "lesson",
+        summary: "Hareket (Mavi), Görünüm (Mor) ve Ses (Pembe) blok gruplarını inceledik. Kuklaların x ve y koordinat mantığını kavradık.",
+        notebookNote: [
+          "<b>Mavi Bloklar (Hareket):</b> Adım atma, dönme ve x-y konumuna gitme kodlarıdır.",
+          "<b>Mor Bloklar (Görünüm):</b> Konuşma balonu çıkarma ve kılık değiştirme kodlarıdır.",
+          "<b>Koordinat Düzlemi:</b> X yatay konumu (sağ-sol), Y dikey konumu (yukarı-aşağı) belirtir."
+        ],
+        mediaTitle: "Scratch: Hareket, Görünüm ve Ses Blokları",
+        mediaDesc: "Karakteri yürütme, konuşturma ve ses çalma uygulaması.",
+        mediaUrl: "https://www.youtube.com/results?search_query=scratch+hareket+gorunum+ses+bloklari",
+        questions: [
+          { q: "Kuklanın ileri gitmesini veya dönmesini sağlayan kod blokları hangi renktedir?", a: "Mavi renk (Hareket blokları)." },
+          { q: "Kuklanın konuşma baloncuğu çıkarmasını veya kılık değiştirmesini sağlayan bloklar hangisidir?", a: "Mor renk (Görünüm blokları)." },
+          { q: "Projede ses veya müzik çalmak için hangi renk blok grubu kullanılır?", a: "Pembe / Eflatun renk (Ses blokları)." },
+          { q: "Bir kuklanın ekranda x ve y konumları neyi ifade eder?", a: "Kuklanın sahne üzerindeki yatay (x) ve dikey (y) koordinatlarını." },
+          { q: "Scratch'te projeyi durdurmak için hangi simgeye tıklanır?", a: "Kırmızı buton (Durdur)." }
+        ]
+      },
+      {
+        id: 24,
+        title: "24. Hafta",
+        dates: "22 - 28 Şubat",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Blok Tabanlı Programlama: Kontrol ve Olaylar",
+        type: "lesson",
+        summary: "Olaylar (Sarı) ve Kontrol (Turuncu) bloklarını inceledik. Sürekli tekrar döngüsü ve tuş tetikleyicilerini kullandık.",
+        notebookNote: [
+          "<b>Olaylar (Sarı):</b> 'Yeşil bayrağa tıklandığında' veya 'Boşluk tuşuna basılınca' gibi tetikleyicilerdir.",
+          "<b>Sürekli Tekrarla:</b> İçine yazılan kodları durdurulana kadar sonsuza kadar yineler.",
+          "<b>Kenara Geldiysen Sektir:</b> Karakterin ekrandan kaybolmasını önler."
+        ],
+        mediaTitle: "Scratch: Döngüler ve Olaylar Blokları",
+        mediaDesc: "Tuşlarla kukla yönetimi ve sürekli tekrar döngüleri.",
+        mediaUrl: "https://www.youtube.com/results?search_query=scratch+olaylar+ve+kontrol+bloklari",
+        questions: [
+          { q: "Bir kodun belirli bir tuşa basıldığında çalışması için hangi blok grubuna bakılır?", a: "Sarı renk (Olaylar blokları)." },
+          { q: "Belirli bir eylemi sürekli tekrar ettirmek için hangi kontrol bloğu kullanılır?", a: "Sürekli Tekrarla (Forever)." },
+          { q: "Bir eylemi sadece 10 kez yaptırmak için hangi blok kullanılır?", a: "10 Defa Tekrarla." },
+          { q: "İki kod arasında bekleme süresi oluşturmak için hangi blok kullanılır?", a: "1 Saniye Bekle." },
+          { q: "Kuklanın kenara ulaştığında geri dönmesini sağlayan blok nedir?", a: "'Kenara geldiysen sektir' bloğu." }
+        ]
+      },
+      {
+        id: 25,
+        title: "25. Hafta",
+        dates: "01 - 07 Mart",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Blok Tabanlı Ortamda Tasarım ve Programlama",
+        type: "lesson",
+        summary: "Eğer ... ise karar yapılarını, Algılama bloklarını ve oyunlarda skor tutmak için değişken (Variable) kavramını öğrendik.",
+        notebookNote: [
+          "<b>Şart/Karar Yapısı:</b> 'Eğer ... ise' bloğu belirtilen kural sağlandığında içindeki kodu çalıştırır.",
+          "<b>Algılama:</b> Fareye değdi mi, renge dokundu mu gibi durumları hisseder.",
+          "<b>Değişken:</b> Skoru, canı veya zamanı hafızasında tutan değer kutusudur."
+        ],
+        mediaTitle: "Scratch: Eğer Şartı ve Değişken (Skor/Can) Mantığı",
+        mediaDesc: "Puan toplamalı basit oyun yapımı ve değişkenler.",
+        mediaUrl: "https://www.youtube.com/results?search_query=scratch+eger+ise+degiskenler+puan",
+        questions: [
+          { q: "Bir şart gerçekleştiğinde kodun çalışmasını sağlayan mantık yapısı hangisidir?", a: "'Eğer ... ise' (Karar yapısı)." },
+          { q: "Şart doğru değilse alternatif kodun çalışması için hangi blok kullanılır?", a: "'Eğer ... ise Değilse'." },
+          { q: "Kuklanın fare imlecine veya başka bir kuklaya değip değmediğini kontrol eden blok grubu nedir?", a: "Açık mavi (Algılama blokları)." },
+          { q: "Oyunda skor veya can gibi değerleri tutmak için ne oluştururuz?", a: "Değişken (Variable)." },
+          { q: "Top hedefe her çarptığında skoru 1 artırmak için değişken bloğu nasıl ayarlanır?", a: "'Skoru 1 kadar değiştir' şeklinde." }
+        ]
+      },
+      {
+        id: 26,
+        title: "26. Hafta",
+        dates: "08 - 14 Mart",
+        unit: "TATİL",
+        topic: "2. DÖNEM ARA TATİLİ & RAMAZAN BAYRAMI",
+        type: "holiday",
+        holidayDesc: "Ara tatil ve Ramazan Bayramı tatili. İyi tatiller dileriz!"
+      },
+      {
+        id: 27,
+        title: "27. Hafta",
+        dates: "15 - 21 Mart",
+        unit: "ÖLÇME VE DEĞERLENDİRME",
+        topic: "2. DÖNEM 1. SINAV HAFTASI",
+        type: "exam",
+        examDesc: "Bu hafta 2. Dönem 1. Ortak Yazılı Sınav haftasıdır. Blok tabanlı programlama konularını kapsayan sınav uygulanır."
+      },
+      {
+        id: 28,
+        title: "28. Hafta",
+        dates: "22 - 28 Mart",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Blok Tabanlı Ortamda Tasarım ve Programlama",
+        type: "lesson",
+        summary: "Karakterler arası haberleşme (Haber sal/alındığında), animasyon kılıkları ve hata ayıklama (debugging) stratejilerini uyguladık.",
+        notebookNote: [
+          "<b>Haber Sal:</b> Bir kuklanın diğer kuklaya veya sahneye eylem başlatma mesajı göndermesidir.",
+          "<b>Kılık Değiştir:</b> Kuklaya yürüme veya koşma animasyonu vermek için kullanılır.",
+          "<b>Hata Ayıklama (Debugging):</b> Koddaki mantık yanlışlarını bulup onarma işlemidir."
+        ],
+        mediaTitle: "Scratch: Karakterleri Konuşturma ve Haber Salma",
+        mediaDesc: "Haber sal blokları ile diyalog ve animasyon oluşturma.",
+        mediaUrl: "https://www.youtube.com/results?search_query=scratch+haber+sal+haberini+aldigimda",
+        questions: [
+          { q: "Oyunlarda karakterin yürüme animasyonunu vermek için hangi blok döngü içine konur?", a: "'Sonraki kılık' (Next costume) bloğu." },
+          { q: "İki kuklanın birbiriyle iletişim kurması için Scratch'te hangi özellik kullanılır?", a: "'Haber sal' ve 'Haberini aldığımda' blokları." },
+          { q: "Toplama, çıkarma, büyüktür, küçüktür gibi matematiksel karşılaştırma blokları hangi renktedir?", a: "Yeşil renk (Operatörler)." },
+          { q: "Kuklanın ekranda görünmesini veya kaybolmasını sağlayan bloklar nelerdir?", a: "'Göster' ve 'Gizle' blokları." },
+          { q: "Kod bloklarında yapılan bir mantık hatasını bulup düzeltmeye ne ad verilir?", a: "Hata ayıklama (Debugging)." }
+        ]
+      },
+      {
+        id: 29,
+        title: "29. Hafta",
+        dates: "29 Mart - 04 Nisan",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Okul Temelli Planlama / Proje Geliştirme",
+        type: "lesson",
+        summary: "Kullanıcıdan soru sorarak klavye girdisi alma, projeleri yerel bilgisayara (.sb3) olarak kaydetme ve genel oyun senaryosu kurma adımlarını gördük.",
+        notebookNote: [
+          "<b>'... diye sor ve bekle':</b> Kullanıcıdan klavye ile cevap isteyen Algılama bloğudur.",
+          "Kullanıcının yazdığı metin otomatik olarak mavi <b>'cevap'</b> kutucuğunda saklanır.",
+          "Scratch projeleri <b>Dosya > Bilgisayarına Kaydet</b> ile .sb3 uzantısıyla indirilir."
+        ],
+        mediaTitle: "Scratch: Soru-Cevap ve Bilgi Yarışması Yapımı",
+        mediaDesc: "Kullanıcı girdisi alma ve yanıt kontrolü uygulaması.",
+        mediaUrl: "https://www.youtube.com/results?search_query=scratch+bilgi+yarismasi+yapimi",
+        questions: [
+          { q: "Bir yazılım veya oyun yapmaya başlamadan önce ilk yapılması gereken adım nedir?", a: "Oyunun/programın senaryosunu ve kurallarını planlamak." },
+          { q: "Kullanıcıdan klavyeyle bilgi/cevap almak için Algılama grubundaki hangi blok kullanılır?", a: "'... diye sor ve bekle' bloğu." },
+          { q: "Kullanıcının girdiği cevap Scratch'te hangi özel blokta saklanır?", a: "'Cevap' (Answer) bloğunda." },
+          { q: "Oyun bittiğinde tüm hareketleri durdurmak için hangi blok kullanılır?", a: "'Tümünü durdur' bloğu." },
+          { q: "Scratch projemizi bilgisayarımıza hangi menüden kaydederiz?", a: "Dosya > Bilgisayarına kaydet." }
+        ]
+      },
+      {
+        id: 30,
+        title: "30. Hafta",
+        dates: "05 - 11 Nisan",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Blok Tabanlı Ortamda Oyun Geliştirme",
+        type: "lesson",
+        summary: "Labirent oyunu ve engel aşma mekanikleri geliştirdik. Karakterin duvarlardan geçmesini engelleme ve rastgele konumlardan nesne düşürmeyi kodladık.",
+        notebookNote: [
+          "<b>Labirent Mantığı:</b> 'Eğer duvara/renge değiyor ise -10 adım git' kuralı ile duvardan geçiş engellenir.",
+          "<b>Rastgele Sayı Seç:</b> Operatörler grubundaki bu blok nesnelerin sahneye sürpriz noktalardan gelmesini sağlar.",
+          "Klavyeden sağ/sol ok x koordinatını, yukarı/aşağı ok y koordinatını değiştirir."
+        ],
+        mediaTitle: "Scratch ile Adım Adım Labirent Oyunu Yapımı",
+        mediaDesc: "Duvardan geçmeyen karakter ve finiş çizgisi kodlaması.",
+        mediaUrl: "https://www.youtube.com/results?search_query=scratch+labirent+oyunu+nasil+yapilir",
+        questions: [
+          { q: "Labirent oyununda kuklanın duvardan geçmemesi için hangi mantık bloğu kurulur?", a: "Eğer duvara değiyor ise geri adım at." },
+          { q: "Kuklayı klavyedeki sağ/sol ok tuşlarıyla yürütmek için hangi blok kullanılır?", a: "Sağ oka basılınca x'i 10 değiştir; sol oka basılınca x'i -10 değiştir." },
+          { q: "Kuklayı yukarı/aşağı ok tuşlarıyla yürütmek için hangi eksen değiştirilir?", a: "Y ekseni (Dikey koordinat)." },
+          { q: "Rastgele konumlardan elma veya puan düşürmek için hangi operatör kullanılır?", a: "'1 ile 10 arasında rastgele sayı seç' bloğu." },
+          { q: "Can değişkeni 0 olduğunda oyunun bitmesi hangi şartla kontrol edilir?", a: "'Eğer can = 0 ise' şartıyla." }
+        ]
+      },
+      {
+        id: 31,
+        title: "31. Hafta",
+        dates: "12 - 18 Nisan",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Klonlama ve Çoklu Karakter Yönetimi",
+        type: "lesson",
+        summary: "Scratch'te klonlama (ikiz oluşturma) özelliğini öğrendik. Sahneye yağan meyveler veya çoğalan nesnelerin nasıl yönetileceğini işledik.",
+        notebookNote: [
+          "<b>Klonlama (İkizini Oluştur):</b> Tek bir kukladan yüzlerce kopya üretmeyi sağlayan Kontrol bloğudur.",
+          "<b>İkiz Olarak Başladığımda:</b> Klonlanan karakterin yapacağı görevleri tanımlar.",
+          "Gereksiz bellek kullanımını önlemek için işi biten klon <b>'bu ikizi sil'</b> bloğuyla sahneden kaldırılır."
+        ],
+        mediaTitle: "Scratch: Klonlama (İkizini Oluştur) Özelliği",
+        mediaDesc: "Gökten elma yağan oyun örneğiyle klonlama mantığı.",
+        mediaUrl: "https://www.youtube.com/results?search_query=scratch+klonlama+ikizini+olustur+elma+toplama",
+        questions: [
+          { q: "Scratch'te aynı kukladan sahnede onlarca kopya üretmek için hangi özellik kullanılır?", a: "Klonlama (İkizini oluşturma)." },
+          { q: "Klonlanan bir kuklanın davranışlarını belirleyen başlangıç bloğu nedir?", a: "'İkiz olarak başladığımda' bloğu." },
+          { q: "Klon işini bitirdiğinde sahneden silmek için hangi blok kullanılır?", a: "'Bu ikizi sil' bloğu." },
+          { q: "Klonlama tekniği en çok ne tür oyunlarda kullanılır?", a: "Gökten yağan meyveler, lazer atışları veya düşman orduları oluştururken." },
+          { q: "Bir projenin kodlarını daha sade ve anlaşılır yazmanın programcıya yararı nedir?", a: "Hataların kolay bulunmasını ve başkalarının kodu rahat anlamasını sağlar." }
+        ]
+      },
+      {
+        id: 32,
+        title: "32. Hafta",
+        dates: "19 - 25 Nisan",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Özel Bloklar ve Fonksiyon Mantığı",
+        type: "lesson",
+        summary: "Özel Bloklar (Fonksiyonlar) oluşturmayı ve Kalem (Pen) eklentisi ile ekranda geometrik şekiller ve resimler çizmeyi öğrendik.",
+        notebookNote: [
+          "<b>Özel Blok (Fonksiyon):</b> Sürekli tekrar eden kod kümelerini tek isim altında toplayarak kodu sadeleştirir.",
+          "<b>Kalem Eklentisi:</b> Kuklanın gittiği yerlere çizgi çizmesini sağlar.",
+          "<b>Kalemi Bastır:</b> Çizimi başlatır; <b>Kalemi Kaldır:</b> Çizmeyi durdurur."
+        ],
+        mediaTitle: "Scratch: Kalem Eklentisi ve Şekil Çizdirme",
+        mediaDesc: "Kare, üçgen ve çokgen çizimleri kodlama.",
+        mediaUrl: "https://www.youtube.com/results?search_query=scratch+kalem+eklentisi+kare+ucgen+cizimi",
+        questions: [
+          { q: "Scratch'te sık tekrar eden kod öbeklerini tek bir blok altında toplamak için ne kullanılır?", a: "'Bir Blok Oluştur' (Özel Bloklar / My Blocks)." },
+          { q: "Fonksiyon (özel blok) oluşturmanın en büyük avantajı nedir?", a: "Aynı kodları tekrar tekrar yazmayı önler ve projeyi düzenli tutar." },
+          { q: "Çizim yapmak ve geometrik şekiller çizdirmek için Scratch'e hangi eklenti eklenir?", a: "Kalem (Pen) eklentisi." },
+          { q: "Kalem eklentisinde ekrandaki tüm çizimleri silmek için hangi blok kullanılır?", a: "'Tümünü sil' bloğu." },
+          { q: "Karakter hareket ederken çizgi çizmesi için kalemin hangi konumda olması gerekir?", a: "'Kalemi bastır' (Pen down) konumunda." }
+        ]
+      },
+      {
+        id: 33,
+        title: "33. Hafta",
+        dates: "26 Nisan - 02 Mayıs",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Yapay Zekâ Destekli Ürün Geliştirme",
+        type: "lesson",
+        summary: "Scratch ve benzeri ortamlara yapay zekâ (video algılama, metinden sese dönüştürme ve yüz tanıma) eklentilerini entegre etmeyi gördük.",
+        notebookNote: [
+          "<b>Metinden Sese (Text to Speech):</b> Yazdığımız kelimeleri bilgisayara sesli okutur.",
+          "<b>Video Algılama:</b> Web kamerasındaki hareketleri sensör gibi algılar.",
+          "<b>Yapay Zekâ Eklentileri:</b> Sol alttaki mavi '+' butonundan projeye eklenir."
+        ],
+        mediaTitle: "Scratch: Video Algılama ve Balon Patlatma Oyunu",
+        mediaDesc: "Kamera hareketiyle ekrandaki kuklaları kontrol etme.",
+        mediaUrl: "https://www.youtube.com/results?search_query=scratch+video+algilama+balon+patlatma",
+        questions: [
+          { q: "Blok tabanlı kodlama programlarına yapay zekâ özellikleri kazandıran araçlara ne denir?", a: "Yapay zekâ eklentileri (AI Extensions)." },
+          { q: "Kameraya gösterilen el hareketlerini algılayan yapay zekâ eklentisine ne denir?", a: "El algılama / Poz tanıma eklentisi." },
+          { q: "Yapay zekâ destekli Scratch uygulamasında kameraya gülümseyince karakteri güldürmek ne tür bir algılamadır?", a: "Duygu / Yüz ifadesi tanıma." },
+          { q: "Mikrofona söylediğimiz Türkçe cümleyi metne çeviren yapay zekâ özelliğine ne ad verilir?", a: "Konuşmayı Metne Çevirme (Speech to Text)." },
+          { q: "Yazılan metni bilgisayara sesli okutan özelliğe ne denir?", a: "Metni Sese Çevirme (Text to Speech)." }
+        ]
+      },
+      {
+        id: 34,
+        title: "34. Hafta",
+        dates: "03 - 09 Mayıs",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Yapay Zekâ Destekli Ürün Geliştirme",
+        type: "lesson",
+        summary: "Görüntü tanıma modellerini Scratch'e entegre ederek akıllı geri dönüşüm kutusu gibi çevreye duyarlı projeler tasarladık.",
+        notebookNote: [
+          "<b>Akıllı Çözümler:</b> Görüntü tanıma ile plastiği kağıttan ayıran sistemler gibi faydalı projeler kurulabilir.",
+          "Girdi (Kamera görüntüsü) -> Yapay Zekâ Analizi -> Karar/Çıktı (Kapak açılması).",
+          "Işık ve açı değişimleri modelin algılama başarısını etkileyebilir."
+        ],
+        mediaTitle: "Yapay Zekâ ile Akıllı Geri Dönüşüm Projesi",
+        mediaDesc: "Görüntü işleme kullanarak atık ayrıştıran örnek proje tasarımı.",
+        mediaUrl: "https://www.youtube.com/results?search_query=yapay+zeka+geri+donusum+projesi+ortaokul",
+        questions: [
+          { q: "Kameraya gösterilen bir meyveyi yapay zekânın tanıması için hangi model kullanılmalıdır?", a: "Görüntü tanıma (Image Classification) modeli." },
+          { q: "Yapay zekâ destekli bir geri dönüşüm kutusunda kameranın görevi nedir?", a: "Gelen atığın görüntüsünü alıp yapay zekâya iletmek." },
+          { q: "Kod bloğunun 'Eğer plastik algılandıysa plastik kapağını aç' demesi hangi mantık yapısıdır?", a: "Şart / Karar yapısı (Eğer ... ise)." },
+          { q: "Yapay zekâ modeli düşük ışıkta nesneyi tanıyamazsa ne yapılmalıdır?", a: "Düşük ışıkta çekilmiş fotoğraflarla da eğitilmeli veya aydınlatma sağlanmalıdır." },
+          { q: "Akıllı projeler geliştirirken donanım ve yazılımın birlikte çalışması neden önemlidir?", a: "Sensörlerden gelen verilerin yazılımla karara dönüştürülüp fiziksel çıktılara aktarılması için." }
+        ]
+      },
+      {
+        id: 35,
+        title: "35. Hafta",
+        dates: "10 - 16 Mayıs",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Yapay Zekâ Projesi Test ve Sunum",
+        type: "lesson",
+        summary: "Geliştirilen projelerin kullanıcı geri bildirimiyle test edilmesi, iyileştirilmesi ve sunum tekniklerini değerlendirdik.",
+        notebookNote: [
+          "<b>Kullanıcı Testi:</b> Projenin başkaları tarafından denenip hataların raporlanmasıdır.",
+          "<b>Akran Değerlendirmesi:</b> Arkadaşların projeyi inceleyerek yapıcı fikirler sunmasıdır.",
+          "İyi bir sunumda problem, çözüm yolu, kod yapısı ve projenin faydası açıkça anlatılır."
+        ],
+        mediaTitle: "Bir Yazılım Projesi Nasıl Sunulur?",
+        mediaDesc: "Ortaokul düzeyinde proje hazırlama ve sınıfa sunma ipuçları.",
+        mediaUrl: "https://www.youtube.com/results?search_query=ortaokul+bilisim+proje+sunumu+nasil+yapilir",
+        questions: [
+          { q: "Hazırlanan yapay zekâ projesinin eksiklerini görmek için yapılan ilk iş nedir?", a: "Farklı durumlarda test etmek (Test aşaması)." },
+          { q: "Projeyi arkadaşlarımızın denemesini sağlayıp onların fikrini almaya ne denir?", a: "Kullanıcı geri bildirimi (Akran değerlendirmesi)." },
+          { q: "Projede karşılaşılan aksaklıkları not alıp kodu güncelleme aşamasına ne ad verilir?", a: "İyileştirme ve geliştirme aşaması." },
+          { q: "Projeyi sınıfa veya jüriye tanıtırken hazırlanan sunumda neler yer almalıdır?", a: "Problemin tanımı, çözüm yöntemi, kullanılan kodlar ve projenin faydası." },
+          { q: "Bir projenin başarılı olması sadece koduna mı bağlıdır, yoksa faydasına da bağlı mıdır?", a: "Gerçek hayattaki bir ihtiyacı karşılamasına ve kullanıcı dostu olmasına da bağlıdır." }
+        ]
+      },
+      {
+        id: 36,
+        title: "36. Hafta",
+        dates: "17 - 23 Mayıs",
+        unit: "TATİL & YAZILIM TASARIMI",
+        topic: "KURBAN BAYRAMI TATİLİ & 19 MAYIS",
+        type: "holiday",
+        holidayDesc: "17-18 Mayıs Kurban Bayramı ve 19 Mayıs Atatürk'ü Anma Gençlik ve Spor Bayramı tatili."
+      },
+      {
+        id: 37,
+        title: "37. Hafta",
+        dates: "24 - 30 Mayıs",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Yapay Zekâ Destekli Ürün Geliştirme",
+        type: "lesson",
+        summary: "Erişilebilirlik odaklı engelsiz projeler, Scratch topluluğunda proje paylaşma ve Remiks (Remix) kurallarını işledik.",
+        notebookNote: [
+          "<b>Erişilebilirlik:</b> Fiziksel veya görme/işitme engeli olan bireylerin de teknolojiyi rahatça kullanabilmesidir.",
+          "<b>Remiks (Remix):</b> Başkasının açık projesini geliştirip kendi projemiz yapmaktır.",
+          "Remiks yaparken orijinal yazarın adını belirtmek bilişim etiği gereğidir."
+        ],
+        mediaTitle: "Scratch Proje Paylaşma ve Remix Kültürü",
+        mediaDesc: "Projeyi dünyayla paylaşma ve etik kurallar.",
+        mediaUrl: "https://www.youtube.com/results?search_query=scratch+proje+paylasma+ve+remix",
+        questions: [
+          { q: "Kullanıcının yüz hareketleriyle yönetilen engelsiz bir oyun hangi alana örnektir?", a: "Erişilebilirlik ve yardımcı bilişim teknolojilerine." },
+          { q: "Projelerimizi internet üzerinde diğer öğrencilerle paylaşmanın adı nedir?", a: "Projeyi Paylaş (Share)." },
+          { q: "Paylaşılan bir Scratch projesinin içine bakıp kodlarını incelemeye ne denir?", a: "'İçine Bak' (See inside)." },
+          { q: "Başka birinin paylaştığı projeyi kopyalayıp geliştirerek kendi projemiz yapmaya ne denir?", a: "Remiks (Remix)." },
+          { q: "Remiks yaptığımız bir projede orijinal yapımcının adını belirtmek hangi kural gereğidir?", a: "Bilişim etiği ve telif hakkı / saygı kuralı." }
+        ]
+      },
+      {
+        id: 38,
+        title: "38. Hafta",
+        dates: "31 Mayıs - 06 Haziran",
+        unit: "ÖLÇME VE DEĞERLENDİRME",
+        topic: "2. DÖNEM 2. SINAV HAFTASI",
+        type: "exam",
+        examDesc: "Bu hafta 2. Dönem 2. Ortak Yazılı Sınav haftasıdır. Blok tabanlı yapay zekâ ve yıl boyu işlenen konuları kapsayan sınav uygulanır."
+      },
+      {
+        id: 39,
+        title: "39. Hafta",
+        dates: "07 - 13 Haziran",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Yıl Sonu Proje Değerlendirme ve Portfolyo",
+        type: "lesson",
+        summary: "Öğrencilerin yıl boyunca geliştirdiği çizim, ses, video ve kodlama ürünlerini dijital portfolyoda bir araya getirmesini ve öz değerlendirmeyi çalıştık.",
+        notebookNote: [
+          "<b>Dijital Portfolyo:</b> Yıl boyunca ürettiğimiz çalışmaların düzenli dijital koleksiyonudur.",
+          "<b>Öz Değerlendirme:</b> Kendi eksiklerimizi ve güçlü yönlerimizi tarafsızca görme becerisidir.",
+          "İyi bir bilişimci takım çalışmasına ve sürekli öğrenmeye açık olandır."
+        ],
+        mediaTitle: "Dijital Portfolyo ve Ürün Dosyası Hazırlama",
+        mediaDesc: "Yıl boyu yapılan dijital çalışmaları sunum dosyasına dönüştürme.",
+        mediaUrl: "https://www.youtube.com/results?search_query=dijital+portfolyo+nasil+hazirlanir+ogrenci",
+        questions: [
+          { q: "Yıl boyunca ürettiğimiz tüm dijital çalışmaların toplandığı gelişim dosyasına ne denir?", a: "Dijital portfolyo (Gelişim dosyası)." },
+          { q: "Bir öğrencinin kendi projesini belirlenen ölçütlere göre puanlamasına ne denir?", a: "Öz değerlendirme." },
+          { q: "Arkadaşımızın projesini inceleyip olumlu ve geliştirilebilir yönlerini söylemeye ne denir?", a: "Akran değerlendirmesi." },
+          { q: "İyi bir yazılımcının sahip olması gereken en önemli problem çözme özelliği nedir?", a: "Sabır, analitik düşünme ve araştırmacı olmak." },
+          { q: "Bir projede takım halinde çalışmanın en büyük faydası nedir?", a: "Farklı fikirlerin birleşmesi ve işlerin daha hızlı tamamlanması (İş birliği)." }
+        ]
+      },
+      {
+        id: 40,
+        title: "40. Hafta",
+        dates: "14 - 20 Haziran",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Bilişim ve Gelecek Vizyonu",
+        type: "lesson",
+        summary: "6. sınıf müfredatının genel değerlendirmesi; algoritmik düşünmenin gelecekteki önemi ve teknoloji üreten bireyler olma vizyonunu ele aldık.",
+        notebookNote: [
+          "Algoritmik düşünme bize hayattaki problemleri adım adım ve mantıklı çözme yetisi kazandırır.",
+          "Dijital ayak izimizi daima temiz, saygın ve güvenli tutmalıyız.",
+          "<b>Temel İlke:</b> Teknolojiyi sadece tüketen değil, teknoloji üreten ve geliştiren bireyler olmalıyız!"
+        ],
+        mediaTitle: "Geleceğin Dünyasında Kodlama ve Teknoloji Üretmek",
+        mediaDesc: "Gençlere ilham veren teknoloji ve inovasyon vizyonu.",
+        mediaUrl: "https://www.youtube.com/results?search_query=turkiyenin+gelecegi+kodlama+ureten+nesil",
+        questions: [
+          { q: "6. sınıf boyunca öğrendiğimiz kodlama mantığı bize hangi düşünme becerisini kazandırdı?", a: "Algoritmik ve bilişimsel düşünme becerisi." },
+          { q: "Gelecekte yazılım geliştiricisi olmak isteyen biri hangi alanlarda kendini geliştirmelidir?", a: "Matematik, İngilizce, mantık ve programlama dilleri." },
+          { q: "Yapay zekâ ve robotların yaygınlaşacağı dünyada insanların en çok ihtiyaç duyacağı özellik nedir?", a: "Yaratıcılık, eleştirel düşünme ve etik karar alma." },
+          { q: "Dijital ayak izimizi gelecekte tertemiz tutmak için bugünden neye dikkat etmeliyiz?", a: "İnternette paylaştığımız fotoğraf, yorum ve kişisel bilgilere dikkat etmeliyiz." },
+          { q: "Teknolojiyi sadece tüketen değil, aynı zamanda ... bir birey olmalıyız?", a: "Üreten (Teknoloji üreten / Geliştiren)." }
+        ]
+      },
+      {
+        id: 41,
+        title: "41. Hafta",
+        dates: "21 - 27 Haziran",
+        unit: "YIL SONU",
+        topic: "SOSYAL ETKİNLİK VE DÖNEM SONU",
+        type: "holiday",
+        holidayDesc: "Dönem sonu sosyal etkinlikleri, karne heyecanı ve yaz tatili başlangıcı! İyi tatiller!"
+      }
+    ];
+
+    const weekListEl = document.getElementById('weekList');
+    const weekTitleEl = document.getElementById('weekTitle');
+    const weekDateEl = document.getElementById('weekDate');
+    const weekUnitEl = document.getElementById('weekUnit');
+    const weekTopicEl = document.getElementById('weekTopic');
+    const contentBodyEl = document.getElementById('contentBody');
+
+    // Menüyü oluştur
+    weeksData.forEach((w) => {
+      const li = document.createElement('li');
+      li.className = 'week-item';
+      li.id = 'week-nav-' + w.id;
+
+      let badgeHtml = '';
+      if (w.type === 'exam') badgeHtml = '<span class="badge badge-exam">📝 Sınav Haftası</span>';
+      else if (w.type === 'holiday') badgeHtml = '<span class="badge badge-holiday">🏖️ Tatil</span>';
+
+      li.innerHTML = `
+        <div class="title">${w.title}: ${w.topic.substring(0, 24)}${w.topic.length > 24 ? '...' : ''}</div>
+        <div class="dates">📅 ${w.dates}</div>
+        ${badgeHtml}
+      `;
+
+      li.addEventListener('click', () => renderWeek(w.id));
+      weekListEl.appendChild(li);
+    });
+
+    // Haftayı ekrana çiz
+    function renderWeek(id) {
+      const week = weeksData.find(w => w.id === id);
+      if (!week) return;
+
+      document.querySelectorAll('.week-item').forEach(el => el.classList.remove('active'));
+      const activeNav = document.getElementById('week-nav-' + id);
+      if (activeNav) {
+        activeNav.classList.add('active');
+        activeNav.scrollIntoView({ block: 'nearest' });
+      }
+
+      weekTitleEl.innerText = `${week.title} (${week.dates})`;
+      weekDateEl.innerText = `Dönem Takvimi: ${week.dates}`;
+      weekUnitEl.innerText = `Ünite: ${week.unit}`;
+      weekTopicEl.innerText = `Konu: ${week.topic}`;
+
+      contentBodyEl.innerHTML = '';
+
+      if (week.type === 'exam') {
+        contentBodyEl.innerHTML = `
+          <div class="special-card exam">
+            <div class="special-title">📝 ${week.topic}</div>
+            <p class="special-desc">${week.examDesc}</p>
+          </div>
+        `;
+      } else if (week.type === 'holiday') {
+        contentBodyEl.innerHTML = `
+          <div class="special-card holiday">
+            <div class="special-title">🏖️ ${week.topic}</div>
+            <p class="special-desc">${week.holidayDesc}</p>
+          </div>
+        `;
+      } else {
+        // 1. Bölüm: Konu Özeti
+        if (week.summary) {
+          const sumTitle = document.createElement('div');
+          sumTitle.className = 'section-title';
+          sumTitle.innerHTML = '📖 Hafta Konu Özeti';
+          contentBodyEl.appendChild(sumTitle);
+
+          const sumCard = document.createElement('div');
+          sumCard.className = 'summary-card';
+          sumCard.innerText = week.summary;
+          contentBodyEl.appendChild(sumCard);
+        }
+
+        // 2. Bölüm: Deftere Yazdırılacak Not
+        if (week.notebookNote && week.notebookNote.length > 0) {
+          const noteTitle = document.createElement('div');
+          noteTitle.className = 'section-title';
+          noteTitle.innerHTML = '✍️ Deftere Yazdırılacak Ders Notu';
+          contentBodyEl.appendChild(noteTitle);
+
+          const noteCard = document.createElement('div');
+          noteCard.className = 'notebook-card';
+          noteCard.innerHTML = `
+            <span class="badge-notebook">📌 Deftere Not Alınacak Bölüm</span>
+            <ul>
+              ${week.notebookNote.map(item => `<li>${item}</li>`).join('')}
+            </ul>
+          `;
+          contentBodyEl.appendChild(noteCard);
+        }
+
+        // 3. Bölüm: Zenginleştirilmiş İçerik (Eğitici Video)
+        if (week.mediaTitle) {
+          const mediaHeading = document.createElement('div');
+          mediaHeading.className = 'section-title';
+          mediaHeading.innerHTML = '🎬 Zenginleştirilmiş İçerik & Eğitici Video';
+          contentBodyEl.appendChild(mediaHeading);
+
+          const mediaCard = document.createElement('div');
+          mediaCard.className = 'media-card';
+          mediaCard.innerHTML = `
+            <div class="media-info">
+              <span class="media-title">${week.mediaTitle}</span>
+              <span class="media-desc">${week.mediaDesc}</span>
+            </div>
+            <a href="${week.mediaUrl}" target="_blank" rel="noopener noreferrer" class="btn-video">
+              ▶️ Videoyu İzle
+            </a>
+          `;
+          contentBodyEl.appendChild(mediaCard);
+        }
+
+        // 4. Bölüm: Açık Uçlu Haftalık Sorular
+        const qTitle = document.createElement('div');
+        qTitle.className = 'section-title';
+        qTitle.innerHTML = '❓ Haftanın Soruları (5 Soru / Kısa Cevaplı)';
+        contentBodyEl.appendChild(qTitle);
+
+        const wrap = document.createElement('div');
+        wrap.className = 'questions-wrapper';
+
+        week.questions.forEach((item, idx) => {
+          const card = document.createElement('div');
+          card.className = 'question-card';
+          card.innerHTML = `
+            <div class="q-header">
+              <span class="q-number">Soru ${idx + 1}</span>
+              <div class="q-text">${item.q}</div>
+            </div>
+            <details>
+              <summary>Cevabı Göster</summary>
+              <div class="answer-box">${item.a}</div>
+            </details>
+          `;
+          wrap.appendChild(card);
+        });
+
+        contentBodyEl.appendChild(wrap);
+      }
+    }
+
+    // İlk açılışta 1. haftayı yükle
+    renderWeek(1);
+  </script>
+</body>
+</html>

@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5. Sınıf Bilişim Teknolojileri - Akıllı Ders Portalı | Çağatay ERTÜRK</title>
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --bg: #f8fafc;
+      --sidebar-bg: #ffffff;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --danger-bg: #fef2f2;
+      --danger-text: #b91c1c;
+      --holiday-bg: #fefce8;
+      --holiday-text: #a16207;
+      --note-bg: #fffbeb;
+      --note-border: #f59e0b;
+      --video-bg: #f0fdf4;
+      --video-border: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    body { display: flex; height: 100vh; background-color: var(--bg); color: var(--text-main); overflow: hidden; }
+
+    /* Açılır / Kapanır Yan Menü (Sidebar) */
+    aside {
+      width: 330px;
+      min-width: 330px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      transition: margin-left 0.3s ease;
+      position: relative;
+      z-index: 20;
+    }
+    aside.collapsed {
+      margin-left: -330px;
+    }
+    .sidebar-header {
+      padding: 18px 20px;
+      background: var(--primary);
+      color: white;
+    }
+    .sidebar-header h1 { font-size: 1.15rem; font-weight: 700; }
+    .sidebar-header p { font-size: 0.8rem; opacity: 0.9; margin-top: 2px; }
+    .sidebar-header .teacher-badge {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .week-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      list-style: none;
+    }
+    .week-item {
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 6px;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .week-item:hover { background: #f1f5f9; }
+    .week-item.active { background: #f0f9ff; border-color: var(--primary); }
+    .week-item .title { font-weight: 600; font-size: 0.9rem; color: #0f172a; }
+    .week-item .dates { font-size: 0.75rem; color: var(--text-muted); }
+    .badge {
+      display: inline-block;
+      align-self: flex-start;
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .badge-exam { background: #fee2e2; color: #b91c1c; }
+    .badge-holiday { background: #fef3c7; color: #92400e; }
+
+    /* Ana Alan */
+    main {
+      flex: 1;
+      padding: 24px 32px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: relative;
+    }
+    .toggle-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .toggle-btn {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      transition: all 0.2s;
+    }
+    .toggle-btn:hover { background: #f8fafc; border-color: var(--primary); color: var(--primary); }
+
+    .banner {
+      background: white;
+      padding: 20px 24px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+    .banner h2 { font-size: 1.35rem; color: #0f172a; margin-bottom: 6px; }
+    .banner .meta { display: flex; gap: 15px; font-size: 0.85rem; color: var(--text-muted); }
+    .banner .topic { margin-top: 6px; font-weight: 600; color: var(--primary); }
+
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    
+    /* 2 Kat Genişletilmiş Konu Özeti */
+    .summary-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 22px;
+      line-height: 1.7;
+      font-size: 0.95rem;
+      color: #334155;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    /* Deftere Yazdırılacak Not */
+    .notebook-card {
+      background: var(--note-bg);
+      border: 1px dashed var(--note-border);
+      border-left: 6px solid var(--note-border);
+      border-radius: 8px;
+      padding: 18px 22px;
+    }
+    .notebook-card .badge-notebook {
+      display: inline-block;
+      background: var(--note-border);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .notebook-card ul {
+      margin-left: 20px;
+      margin-top: 6px;
+      font-size: 0.94rem;
+      color: #78350f;
+      line-height: 1.6;
+    }
+
+    /* Zenginleştirilmiş İçerik Kartı */
+    .media-card {
+      background: var(--video-bg);
+      border: 1px solid var(--video-border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+    .media-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .media-title { font-weight: 700; font-size: 0.96rem; color: #166534; }
+    .media-desc { font-size: 0.85rem; color: #15803d; }
+    .btn-video {
+      background: #16a34a;
+      color: white;
+      text-decoration: none;
+      padding: 9px 16px;
+      border-radius: 6px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s;
+    }
+    .btn-video:hover { background: #15803d; }
+
+    /* Sorular */
+    .questions-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .question-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .q-header {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .q-number {
+      background: #e0f2fe;
+      color: #0369a1;
+      font-weight: 700;
+      font-size: 0.78rem;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    .q-text { font-size: 0.95rem; font-weight: 500; color: #1e293b; line-height: 1.45; }
+
+    details {
+      margin-top: 8px;
+      border-top: 1px dashed var(--border);
+      padding-top: 8px;
+    }
+    summary {
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--primary);
+      list-style: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary:hover { color: var(--primary-dark); }
+    summary::before { content: '👉'; }
+    details[open] summary::before { content: '👇'; }
+    .answer-box {
+      margin-top: 6px;
+      padding: 8px 12px;
+      background: #fef2f2;
+      border-left: 4px solid #ef4444;
+      color: #991b1b;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-radius: 0 4px 4px 0;
+    }
+
+    /* Tatil & Sınav Bilgilendirme Kutusu */
+    .special-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+      margin-top: 15px;
+    }
+    .special-card.holiday { background: var(--holiday-bg); border-color: #fde047; }
+    .special-card.exam { background: var(--danger-bg); border-color: #fca5a5; }
+    .special-title { font-size: 1.35rem; font-weight: 700; margin-bottom: 8px; }
+    .special-desc { font-size: 0.96rem; color: #475569; }
+
+    .footer-note {
+      margin-top: auto;
+      text-align: center;
+      padding: 16px 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Açılır / Kapanır Yan Menü -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <h1>Bilişim Teknolojileri 5</h1>
+      <p>Haftalık Plan & Soru Portalı</p>
+      <div class="teacher-badge">👨‍🏫 Çağatay ERTÜRK</div>
+    </div>
+    <ul class="week-list" id="weekList"></ul>
+  </aside>
+
+  <!-- Ana İçerik Alanı -->
+  <main id="mainContent">
+    <div class="toggle-bar">
+      <button class="toggle-btn" id="toggleSidebarBtn">
+        ☰ <span>Haftalık Menüyü Kapat</span>
+      </button>
+    </div>
+
+    <div class="banner" id="banner">
+      <h2 id="weekTitle">Yükleniyor...</h2>
+      <div class="meta">
+        <span id="weekDate"></span>
+        <span id="weekUnit"></span>
+      </div>
+      <div class="topic" id="weekTopic"></div>
+    </div>
+
+    <div id="contentBody" style="display:flex; flex-direction:column; gap:16px;"></div>
+
+    <div class="footer-note">
+      Bilişim Teknolojileri ve Yazılım Dersi &bull; <strong>Çağatay ERTÜRK</strong>
+    </div>
+  </main>
+
+  <script>
+    const weeksData = [
+      {
+        id: 1,
+        title: "1. Hafta",
+        dates: "14 - 20 Eylül",
+        unit: "Bilişim Teknolojilerinin Hayatımızdaki Yeri",
+        topic: "Bilişim Teknolojilerinin Sınıflandırılması",
+        type: "lesson",
+        summary: "Bilişim teknolojileri; bilginin toplanması, işlenmesi, depolanması ve ağlar aracılığıyla bir yerden başka bir yere iletilmesini sağlayan tüm donanım ve yazılım araçlarının bütünüdür. İnsanlık tarihi boyunca duman ve güvercinle başlayan, ardından mektup ve telgrafla süren haberleşme serüveni; günümüzde akıllı telefonlar, bilgisayarlar ve uydu ağlarıyla saniyeler içine inmiştir. Bilişim teknolojileri hayatımızın her alanına girmiştir: Eğitimde etkileşimli tahtalar ve EBA, sağlıkta MHRS ve e-Nabız, ulaşımda navigasyon ve HGS, bankacılıkta mobil bankacılık ve temassız ödemeler bu teknolojilerin en somut örnekleridir. Bu araçlar zaman ve mekân sınırlarını ortadan kaldırarak hayatımızı büyük oranda kolaylaştırmaktadır.",
+        notebookNote: [
+          "<b>Bilişim Teknolojisi (BT):</b> Bilgiyi üretmek, saklamak ve iletmek için kullanılan tüm teknolojik araçlardır.",
+          "<b>Eski ve Yeni İletişim:</b> Eskiden mektup ve telgraf kullanılırken günümüzde anlık mesajlaşma ve e-posta kullanılmaktadır.",
+          "<b>Kullanım Alanları:</b> Eğitim (akıllı tahta), Sağlık (MHRS/e-Nabız), Ulaşım (navigasyon), Bankacılık (mobil şube), İletişim (akıllı telefon).",
+          "<b>Temel Amaç:</b> Zamandan tasarruf sağlamak ve bilgiye zahmetsizce, anında ulaşmaktır."
+        ],
+        mediaTitle: "Bilişim Teknolojileri Nedir ve Hayatımızdaki Yeri",
+        mediaDesc: "EBA / TRT Çocuk düzeyinde bilişim araçlarını ve kullanım alanlarını tanıtan animasyon video.",
+        mediaUrl: "https://www.youtube.com/results?search_query=eba+bilisim+teknolojileri+nedir+ortaokul",
+        questions: [
+          { q: "Bilginin toplanmasını, işlenmesini ve aktarılmasını sağlayan araçların tümüne ne ad verilir?", a: "Bilişim Teknolojileri (BT)." },
+          { q: "Bilişim teknolojilerinin günlük hayatta kullanıldığı alanlara iki örnek veriniz.", a: "Eğitim ve Sağlık (veya Ulaşım, Bankacılık, İletişim)." },
+          { q: "Eski zamanlarda mektupla yapılan haberleşmenin günümüzdeki dijital karşılığı nedir?", a: "E-posta veya anlık mesajlaşma uygulamaları." },
+          { q: "Hastanelerde muayene sırası almak veya tahlil sonuçlarına bakmak için hangi teknolojiden faydalanırız?", a: "Sağlıkta bilişim teknolojileri (MHRS, e-Nabız vb.)." },
+          { q: "Okullarda etkileşimli tahtalar ve tabletler hangi kullanım alanına girer?", a: "Eğitim alanı." }
+        ]
+      },
+      {
+        id: 2,
+        title: "2. Hafta",
+        dates: "21 - 27 Eylül",
+        unit: "Bilişim Teknolojilerinin Hayatımızdaki Yeri",
+        topic: "Bilişim Teknolojilerinin Etkileri ve Dijital Sağlık",
+        type: "lesson",
+        summary: "Bilişim teknolojileri bilgiye erişimi hızlandırma, dünyayla iletişimi kolaylaştırma ve hayatı pratikleştirme gibi muazzam faydalar sunar. Ancak bilinçsiz ve aşırı kullanıldığında hem beden hem de ruh sağlığımızı doğrudan tehdit eder. Saatlerce yanlış açıyla bilgisayar başında oturmak boyun düzleşmesine, omurga eğriliklerine ve bilek rahatsızlıklarına (karpal tünel) yol açar. Ekrana çok yakından ve dinlenmeden bakmak ise göz kuruluğuna ve görme bozukluklarına neden olur. Ruhsal açıdan ise aşırı ekran süresi teknoloji bağımlılığına, dikkat dağınıklığına, uyku bozukluklarına ve arkadaşlardan uzaklaşarak yalnızlaşmaya sebep olur. Bu nedenle ergonomi kurallarına uymak ve ekrana sınır koymak hayati önem taşır.",
+        notebookNote: [
+          "<b>Ergonomi:</b> Bilgisayar araçlarının insan vücuduna ve sağlığına uygun şekilde düzenlenmesidir.",
+          "<b>Doğru Oturma Kuralı:</b> Sırt ve bel dik olmalı, ayaklar yere basmalı, kollar masaya 90 derece paralel durmalıdır.",
+          "<b>Ekran Konumu:</b> Monitörün üst kenarı tam göz hizasında ve gözden yaklaşık 50-70 cm uzakta olmalıdır.",
+          "<b>20-20-20 Kuralı:</b> Her 20 dakikada bir 20 saniye boyunca en az 20 fit (6 metre) uzağa bakarak gözler dinlendirilmelidir.",
+          "<b>Ruh Sağlığı:</b> Teknoloji bağımlılığı yerine spor, kitap okuma ve yüz yüze sosyalleşmeye vakit ayrılmalıdır."
+        ],
+        mediaTitle: "Ekran Başında Doğru Oturuş ve Dijital Sağlık",
+        mediaDesc: "MEB / EBA animasyonu: Bilgisayar başında omurga ve göz sağlığımızı koruma kuralları.",
+        mediaUrl: "https://www.youtube.com/results?search_query=eba+bilgisayar+ergonomi+ve+saglik+animasyon",
+        questions: [
+          { q: "Bilgisayar kullanırken sırt ve bel ağrısı çekmemek için nasıl oturmalıyız?", a: "Dik oturmalı ve belimizi desteklemeliyiz." },
+          { q: "Bilgisayar ekranı göz hizamıza göre nasıl konumlandırılmalıdır?", a: "Ekranın üst kenarı tam göz hizasında olmalıdır." },
+          { q: "Göz sağlığımızı korumak için ekrana bakarken hangi kuralı uygulamalıyız?", a: "20-20-20 kuralı (Belirli aralıklarla ekrandan uzaklaşıp dinlendirme)." },
+          { q: "Gereğinden fazla ekran başında kalmanın ruh sağlığımıza olumsuz bir etkisi nedir?", a: "Yalnızlaşma, uyku düzeninin bozulması veya öfke hali." },
+          { q: "Bilişim teknolojilerinin hayatımıza sağladığı en büyük olumlu yön nedir?", a: "Bilgiye hızlı erişim ve kolay iletişim sağlama." }
+        ]
+      },
+      {
+        id: 3,
+        title: "3. Hafta",
+        dates: "28 Eylül - 04 Ekim",
+        unit: "Bilişim Teknolojilerinin Hayatımızdaki Yeri",
+        topic: "Dijital Sağlık ve Dijital Vatandaşlık",
+        type: "lesson",
+        summary: "Gerçek hayatta bir kimlik kartımız ve adım attığımız her yerde bıraktığımız ayak izlerimiz olduğu gibi dijital dünyada da birer kimliğimiz ve izimiz vardır. İnternette kullandığımız takma adlar, hesaplar ve profiller bizim 'Dijital Kimliğimiz'dir. İnternette tıkladığımız bir haber, arattığımız bir kelime, yüklediğimiz bir video veya sosyal medyada yaptığımız bir yorum ise ardımızda silinmesi çok zor 'Dijital Ayak İzi' bırakır. Bu ayak izleri gelecekteki okul ve iş hayatımızı bile etkileyebilir. Dijital vatandaş; internette haklarının farkında olan, başkalarının haklarına saygı duyan, güvenilir içerikler üreten ve özel bilgilerini tanımadığı kimselerle asla paylaşmayan bilinçli bireydir.",
+        notebookNote: [
+          "<b>Dijital Kimlik:</b> İnternet üzerindeki kullanıcı adı, profil bilgileri ve dijital hesaplarımızdır.",
+          "<b>Dijital Ayak İzi:</b> İnternette gezinti yaparken, yorum yazarken veya arama yaparken arkamızda bıraktığımız tüm veri izleridir.",
+          "<b>Unutmayın:</b> İnternete yüklenen bir şey kolay kolay tamamen silinmez; bu yüzden paylaşımlarımıza dikkat etmeliyiz.",
+          "<b>Dijital Vatandaş:</b> İnterneti etik kurallara uyarak, saygılı, dürüst ve yasalara uygun kullanan kişidir.",
+          "<b>Kişisel Veri Mahremiyeti:</b> T.C. kimlik numarası, ev adresi, okul adı ve şifreler internette kimseyle paylaşılmaz."
+        ],
+        mediaTitle: "Dijital Ayak İzi Nedir? Ardında Ne Bırakıyorsun?",
+        mediaDesc: "Çocuklar için dijital ayak izi ve siber mahremiyeti anlatan eğitici animasyon.",
+        mediaUrl: "https://www.youtube.com/results?search_query=dijital+ayak+izi+nedir+ortaokul+eba",
+        questions: [
+          { q: "İnternette kim olduğumuzu gösteren kullanıcı adı, profil ve hesap bilgilerimize ne denir?", a: "Dijital kimlik." },
+          { q: "İnternette yaptığımız aramalar ve paylaşımlarla arkamızda bıraktığımız izlere ne denir?", a: "Dijital ayak izi." },
+          { q: "Dijital ayak izimizin olumlu olması için internette nasıl davranmalıyız?", a: "Saygılı, dürüst ve güvenilir paylaşımlar yapmalıyız." },
+          { q: "İnternet ortamında hak ve sorumluluklarının bilincinde olan kişiye ne ad verilir?", a: "Dijital vatandaş." },
+          { q: "Kişisel şifrelerimizi veya ev adresimizi tanımadığımız kişilerle paylaşmak doğru mudur?", a: "Hayır, kişisel veriler gizli tutulmalıdır." }
+        ]
+      },
+      {
+        id: 4,
+        title: "4. Hafta",
+        dates: "05 - 11 Ekim",
+        unit: "Bilişim Teknolojilerinin Hayatımızdaki Yeri",
+        topic: "Dijital Vatandaşlık Uygulamaları",
+        type: "lesson",
+        summary: "Dijital vatandaşlık uygulamaları, vatandaşların devlet dairelerine fiziksel olarak gitmesine gerek kalmadan resmi iş ve işlemlerini güvenli internet kapılarından yürütmesini sağlar. Türkiye'de bu sistemin ana merkezi 'e-Devlet Kapısı' (turkiye.gov.tr)'dır. Öğrenciler ve veliler okul notları, sınav tarihleri ve devamsızlıkları 'e-Okul' üzerinden takip eder. Hastanelerden randevu almak için 'MHRS', geçmiş muayene ve aşı kayıtlarımızı görmek için 'e-Nabız' kullanılır. Vatandaşların talep ve şikayetlerini ilettiği resmi merci ise 'CİMER'dir. Bu platformlar kağıt israfını önler, zaman kazandırır ve bürokrasiyi hızlandırır. Bu sistemlere giriş şifreleri kişiye özeldir ve kesinlikle üçüncü kişilerle paylaşılmamalıdır.",
+        notebookNote: [
+          "<b>e-Devlet (turkiye.gov.tr):</b> Kamu hizmetlerinin vatandaşlara tek kapıdan elektronik ortamda sunulduğu sistemdir.",
+          "<b>e-Okul:</b> MEB'in not, karne, devamsızlık ve ders programı takip platformudur.",
+          "<b>e-Nabız / MHRS:</b> Doktor randevusu alma, tahlil sonuçları ve aşı kayıtlarını takip etme sistemidir.",
+          "<b>CİMER:</b> Cumhurbaşkanlığı İletişim Merkezi; vatandaşların istek, öneri ve şikayet bildirim portalıdır.",
+          "<b>Faydaları:</b> Zamandan ve kağıttan tasarruf sağlar, işlemleri şeffaf ve hızlı kılar."
+        ],
+        mediaTitle: "e-Devlet ve Dijital Kamu Hizmetleri Nasıl Çalışır?",
+        mediaDesc: "Türkiye'deki e-Devlet kapısı ve dijital vatandaşlık uygulamaları rehberi.",
+        mediaUrl: "https://www.youtube.com/results?search_query=edevlet+nedir+nasil+kullanilir+bilisim",
+        questions: [
+          { q: "Kamu kurumlarına gitmeden resmi işlemlerimizi yapabildiğimiz devlet portalı nedir?", a: "e-Devlet Kapısı (turkiye.gov.tr)." },
+          { q: "Öğrencilerin notlarını, devamsızlık durumunu ve ders programını gördüğü MEB sistemi hangisidir?", a: "e-Okul." },
+          { q: "Sağlık geçmişimizi ve aşı bilgilerimizi gösteren dijital vatandaşlık uygulaması nedir?", a: "e-Nabız." },
+          { q: "T.C. vatandaşlarının resmi dilekçe ve isteklerini ilettiği iletişim merkezi nedir?", a: "CİMER." },
+          { q: "Dijital vatandaşlık uygulamalarını kullanırken giriş şifrelerimizin güvenliğini nasıl sağlarız?", a: "Kimseyle paylaşmayarak ve güçlü şifre belirleyerek." }
+        ]
+      },
+      {
+        id: 5,
+        title: "5. Hafta",
+        dates: "12 - 18 Ekim",
+        unit: "Bilişim Teknolojilerinin Hayatımızdaki Yeri",
+        topic: "Yapay Zekâda Temel Kavramlar",
+        type: "lesson",
+        summary: "Yapay zekâ; insan beyninin düşünme, öğrenme, analiz etme, ses ve görüntüleri ayırt etme ve bağımsız problem çözme yeteneklerini taklit eden bilgisayar algoritmaları ve yazılımlarıdır. Normal yazılımlar yalnızca kendilerine verilen sabit kuralları harfiyen yaparken; yapay zekâ kendisine yüklenen devasa verileri inceleyerek deneyim kazanır ve yeni durumlara göre çıkarımlar yapar. Günümüzde cep telefonlarındaki sesli asistanlar (Siri, Google Asistan), YouTube veya video sitelerindeki akıllı video öneri sistemleri, hastalıklı hücreleri tanıyan sağlık yazılımları ve sürücüsüz araçlar yapay zekâ ile çalışır. Yapay zekâ insanların yerini tamamen alamaz; aksine insanların işlerini daha hızlı ve hatasız yapmasına yardım eden güçlü bir araçtır.",
+        notebookNote: [
+          "<b>Yapay Zekâ (AI):</b> İnsan gibi düşünme, öğrenme ve karar verme yeteneklerini taklit eden akıllı bilgisayar yazılımlarıdır.",
+          "<b>Temel Besini:</b> Yapay zekâ <b>veri (data)</b> ile öğrenir; ne kadar çok ve kaliteli veri verilirse o kadar akıllı olur.",
+          "<b>Kullanım Alanları:</b> Akıllı sesli asistanlar, yüz tanıma sistemleri, sürücüsüz arabalar, çeviri programları.",
+          "<b>Unutmayın:</b> Yapay zekâ kendi başına duygu veya vicdana sahip değildir; daima insan rehberliğine muhtaçtır."
+        ],
+        mediaTitle: "Yapay Zekâ Nedir? Çocuklar İçin Basit Anlatım",
+        mediaDesc: "EBA / TÜBİTAK kaynaklı yapay zekanın temellerini anlatan popüler animasyon.",
+        mediaUrl: "https://www.youtube.com/results?search_query=yapay+zeka+nedir+ortaokul+bilisim+eba",
+        questions: [
+          { q: "İnsan benzeri düşünme, öğrenme ve karar verme yeteneklerini taklit eden bilgisayar sistemlerine ne ad verilir?", a: "Yapay Zekâ (AI)." },
+          { q: "Günlük hayatta telefonlarımızda kullandığımız yapay zekâ sesli asistanlarına bir örnek veriniz?", a: "Siri veya Google Asistan." },
+          { q: "Yapay zekânın doğru çalışabilmesi ve yeni şeyler öğrenebilmesi için en çok neye ihtiyacı vardır?", a: "Veriye (Bilgiye)." },
+          { q: "Kameralı yüz tanıma sistemleri hangi teknolojinin ürünüdür?", a: "Yapay zekâ / Görüntü işleme." },
+          { q: "Yapay zekâ insanların yerini tamamen alabilir mi?", a: "Hayır, insan denetimine ve aklına her zaman ihtiyaç duyar." }
+        ]
+      },
+      {
+        id: 6,
+        title: "6. Hafta",
+        dates: "19 - 25 Ekim",
+        unit: "Bilişim Teknolojilerinin Hayatımızdaki Yeri",
+        topic: "Bilgisayar Sistemleri: Donanım ve Yazılım",
+        type: "lesson",
+        summary: "Bir bilgisayar sistemi iki ana temel ayaktan meydana gelir: Donanım ve Yazılım. Donanım, bilgisayarı oluşturan; elle dokunabildiğimiz, gözle görebildiğimiz tüm elektronik ve mekanik fiziksel parçalardır (kasa, klavye, ekran vb.). Yazılım ise bu parçaların ne yapacağını söyleyen, kodlardan oluşan görünmez programlardır (işletim sistemi, oyunlar, çizim programları). Donanım bir insan vücudu ise yazılım onun canı ve aklıdır; biri olmadan diğeri hiçbir işe yaramaz. Donanımlar kendi içinde giriş (bilgi veren: fare, klavye, mikrofon), çıkış (sonuç gösteren: ekran, hoparlör, yazıcı) ve kasanın içindeki ana işlem birimleri (anakart, işlemci, RAM bellek) olarak sınıflandırılır.",
+        notebookNote: [
+          "<b>Donanım (Hardware):</b> Bilgisayarın elle tutulup gözle görülebilen fiziksel parçalarıdır.",
+          "<b>Yazılım (Software):</b> Bilgisayara ne yapacağını söyleyen kodlar ve programlardır.",
+          "<b>İşlemci (CPU):</b> Bilgisayarın beynidir; tüm hesaplamaları ve emirleri yürütür.",
+          "<b>RAM Bellek:</b> Bilgisayar çalışırken bilgileri geçici olarak tutan hafızadır.",
+          "<b>Giriş Birimleri:</b> Klavye, Fare, Mikrofon, Kamera (Bilgisayara veri aktarır).",
+          "<b>Çıkış Birimleri:</b> Ekran, Hoparlör, Yazıcı (Bilgisayardaki sonucu kullanıcıya sunar)."
+        ],
+        mediaTitle: "Bilgisayar Donanımları ve Yazılım Nedir?",
+        mediaDesc: "Bilgisayar kasasının içini ve temel giriş-çıkış birimlerini tanıtan animasyon ders.",
+        mediaUrl: "https://www.youtube.com/results?search_query=donanim+ve+yazilim+nedir+ortaokul+bilisim",
+        questions: [
+          { q: "Bilgisayarın elle tutulup gözle görülebilen tüm fiziksel parçalarına ne denir?", a: "Donanım (Hardware)." },
+          { q: "Bilgisayarda donanımların çalışmasını sağlayan programlara ve kodlara ne denir?", a: "Yazılım (Software)." },
+          { q: "Klavye, fare ve mikrofon bilgisayarın hangi donanım türüne girer?", a: "Giriş birimleri." },
+          { q: "Ekran (Monitör) ve yazıcı (Printer) hangi donanım türüne girer?", a: "Çıkış birimleri." },
+          { q: "Bilgisayarın tüm işlemlerini yapan ve 'bilgisayarın beyni' sayılan donanım parçası nedir?", a: "İşlemci (CPU)." }
+        ]
+      },
+      {
+        id: 7,
+        title: "7. Hafta",
+        dates: "26 Ekim - 01 Kasım",
+        unit: "Bilişim Teknolojilerinin Hayatımızdaki Yeri",
+        topic: "Bilgisayar Sistemleri ve Dosya Yönetimi",
+        type: "lesson",
+        summary: "Bilgisayar düğmesine bastığımızda ilk uyanan ve donanımları yöneterek bize masaüstünü sunan en temel yazılım 'İşletim Sistemi'dir (Pardus, Windows, Android, Linux). Bilgisayarda ürettiğimiz her türlü metin, resim, müzik ve video 'Dosya' adı verilen dijital kaplarda saklanır. Bir dosyanın adının sonunda nokta (.) ile ayrılan harflere 'Dosya Uzantısı' denir; bu uzantı o dosyanın türünü belirler (.mp3 sestir, .jpg resimdir). Bilgisayarımızdaki dosyaların birbirine karışmaması ve aradığımızı saniyeler içinde bulabilmemiz için 'Klasörler' (Dizinler) kullanılır. Ayrıca hafızada çok yer kaplayan dosyaları paketleyip boyutunu küçültmek ve internetten kolay göndermek için 'Dosya Sıkıştırma' (Zip/Rar) işlemi uygulanır.",
+        notebookNote: [
+          "<b>İşletim Sistemi:</b> Donanımları yöneten ana sistem yazılımıdır (Örn: Milli işletim sistemimiz <b>PARDUS</b>, Windows, Linux, Android).",
+          "<b>Klasör (Dizin):</b> Dosyaları düzenli tutmak için kullanılan sarı renkli simgeli yapılardır.",
+          "<b>Dosya Uzantıları:</b> .txt / .docx (Yazı), .jpg / .png (Resim), .mp3 (Ses), .mp4 (Video), .pdf (Belge).",
+          "<b>Dosya Sıkıştırma (Zip/Rar):</b> Dosya boyutunu küçülterek depolama alanından tasarruf etme işlemidir."
+        ],
+        mediaTitle: "Dosya ve Klasör Yönetimi / İşletim Sistemleri",
+        mediaDesc: "Pardus ve Windows'ta dosya düzeni, uzantılar ve zip arşivleme.",
+        mediaUrl: "https://www.youtube.com/results?search_query=dosya+ve+klasor+yonetimi+ortaokul+bilisim",
+        questions: [
+          { q: "Bilgisayardaki tüm donanım ve yazılımları yöneten ana sistem yazılımına ne ad verilir?", a: "İşletim Sistemi (Örn: Windows, Pardus)." },
+          { q: "Belgelerimizi ve resimlerimizi düzenli tutmak için kullandığımız sarı simgeli yapılara ne denir?", a: "Klasör (Dizin)." },
+          { q: "Bir dosyanın türünü belirten, nokta (.) işaretinden sonraki harflere ne denir?", a: "Dosya uzantısı." },
+          { q: "Büyük dosyaları diskte daha az yer kaplaması için küçültme işlemine ne denir?", a: "Dosya sıkıştırma (Zip/Rar)." },
+          { q: "Bir metin belgesinin yaygın dosya uzantısı hangisidir?", a: ".txt veya .docx" }
+        ]
+      },
+      {
+        id: 8,
+        title: "8. Hafta",
+        dates: "02 - 08 Kasım",
+        unit: "ÖLÇME VE DEĞERLENDİRME",
+        topic: "1. DÖNEM 1. SINAV HAFTASI",
+        type: "exam",
+        examDesc: "Bu hafta 1. Dönem 1. Ortak Yazılı Sınav haftasıdır. İlk 7 haftada öğrenilen bilişim teknolojileri sınıflandırması, ergonomi, dijital vatandaşlık, yapay zekâ temelleri, donanım-yazılım ve dosya yönetimi konularından sınav uygulanır."
+      },
+      {
+        id: 9,
+        title: "9. Hafta",
+        dates: "09 - 15 Kasım",
+        unit: "Dijital Ürün Tasarım ve Geliştirme",
+        topic: "Görsel Düzenleme Programlarına Giriş",
+        type: "lesson",
+        summary: "Görseller; duygu, düşünce ve bilgilerin zihinde hızlıca canlanmasını sağlayan en etkili iletişim araçlarıdır. Bilgisayarda çizim yapmak, dijital resim üretmek ve fotoğraflar üzerinde renk, boyut ayarı yapmak için görsel düzenleme programları kullanılır. En temel çizim programı işletim sistemlerinde yer alan Paint'tir. Bunun yanında Paint 3D, Tux Paint ve profesyonel tasarım araçları da mevcuttur. Bu programlarda fırça, kalem, geometrik şekiller, silgi ve boya kovası gibi temel araçlar kullanılır. Görseller piksellerden meydana gelir; dijital ortamda en sık karşımıza çıkan görsel formatları .jpg ve şeffaflığı destekleyen .png formatlarıdır.",
+        notebookNote: [
+          "<b>Görsel Düzenleme Yazılımları:</b> Paint, Paint 3D, Tux Paint, GIMP.",
+          "<b>Piksel:</b> Dijital ekranda görüntüyü oluşturan en küçük renkli kare noktacıklardır.",
+          "<b>Temel Araçlar:</b> Fırça (çizim), Boya Kovası (alan doldurma), Kırpma (fazlalıkları kesme).",
+          "<b>Görsel Formatları:</b> <b>.jpg</b> (fotoğraflar için ideal) ve <b>.png</b> (arka planı şeffaf resimler için ideal)."
+        ],
+        mediaTitle: "Paint ve Dijital Çizim Programları Eğitimi",
+        mediaDesc: "Paint araçlarını tanıma, temel çizim ve renklendirme teknikleri.",
+        mediaUrl: "https://www.youtube.com/results?search_query=paint+programi+nasil+kullanilir+ortaokul",
+        questions: [
+          { q: "Bilgisayarda resim çizmek ve fotoğrafları düzenlemek için kullanılan programlara ne denir?", a: "Görsel düzenleme programları." },
+          { q: "Windows ile birlikte gelen en temel çizim programı hangisidir?", a: "Paint (veya Paint 3D)." },
+          { q: "Çizim yaparken bir alanı tamamen tek bir renkle doldurmak için hangi araç kullanılır?", a: "Boya kovası aracı." },
+          { q: "Resmin istenmeyen kısımlarını kesip atmak için hangi araç kullanılır?", a: "Kırpma aracı." },
+          { q: "En yaygın kullanılan görsel dosya uzantılarına bir örnek veriniz.", a: ".jpg veya .png" }
+        ]
+      },
+      {
+        id: 10,
+        title: "10. Hafta",
+        dates: "16 - 22 Kasım",
+        unit: "TATİL",
+        topic: "1. DÖNEM ARA TATİLİ",
+        type: "holiday",
+        holidayDesc: "1. Dönem Ara Tatili nedeniyle bu hafta ders işlenmemektedir. Dinlenme ve aileyle vakit geçirme zamanı! İyi tatiller!"
+      },
+      {
+        id: 11,
+        title: "11. Hafta",
+        dates: "23 - 29 Kasım",
+        unit: "Dijital Ürün Tasarım ve Geliştirme",
+        topic: "Görsel Tasarıma Yönelik Kurgu ve Ürün Geliştirme",
+        type: "lesson",
+        summary: "Başarılı bir dijital afiş, broşür ya da çizim ortaya çıkarmak sadece rastgele boyamakla olmaz; öncesinde zihinsel ve kurgusal bir planlama gerektirir. Tasarım kurgusu; anlatılmak istenen mesajın belirlenmesi, ana temanın seçilmesi ve resim ile yazı dengesinin kurulması sürecidir. Bir afiş hazırlarken kontrast (zıt renk uyumu) çok önemlidir; örneğin koyu arka plan üzerine açık renk yazı yazılmalıdır ki yazı uzaktan bile rahatça okunabilsin. Çizim yaparken yapılan hataları düzeltmek için klavyedeki 'Geri Al' kısayolundan faydalanılır. Hazırlanan ürünün amaca uygunluğu sınıf arkadaşlarıyla paylaşılarak değerlendirilir.",
+        notebookNote: [
+          "<b>Tasarım Kurgusu:</b> Çizime başlamadan önce konuyu, mesajı ve görsel yerleşimini taslak olarak planlamaktır.",
+          "<b>Kontrast (Zıtlık):</b> Yazıların arka plandan net ayırt edilmesini sağlayan zıt renk kuralıdır (Açık yazı - Koyu zemin).",
+          "<b>Geri Al Kısayolu:</b> Yapılan son hatayı hemen telafi etmek için <b>Ctrl + Z</b> kullanılır.",
+          "<b>Baskı ve Çözünürlük:</b> Tasarımın kalitesinin bozulmaması için yüksek çözünürlük tercih edilmelidir."
+        ],
+        mediaTitle: "Dijital Afiş ve Görsel Tasarım Nasıl Yapılır?",
+        mediaDesc: "Renk uyumu, yazı yerleşimi ve afiş tasarım kuralları anlatımı.",
+        mediaUrl: "https://www.youtube.com/results?search_query=afis+tasarimi+nasil+yapilir+ortaokul",
+        questions: [
+          { q: "Bir afiş veya resim çizmeye başlamadan önce konuyu belirleyip taslak çıkarmaya ne denir?", a: "Görsel kurgu (Tasarım planı)." },
+          { q: "Afiş tasarlarken yazıların kolay okunabilmesi için neye dikkat edilmelidir?", a: "Yazı rengi ile arka plan renginin zıt olmasına (Kontrast)." },
+          { q: "Çizim programında yapılan son hatalı işlemi geri almak için hangi klavye kısayolu kullanılır?", a: "Ctrl + Z" },
+          { q: "Arka planı şeffaf olan görseller genellikle hangi formatta kaydedilir?", a: ".png formatında." },
+          { q: "Tasarlanan görseli sınıfla paylaşırken hangi kriterlere dikkat edilmelidir?", a: "Mesajın netliği, düzeni ve renk uyumu." }
+        ]
+      },
+      {
+        id: 12,
+        title: "12. Hafta",
+        dates: "30 Kasım - 06 Aralık",
+        unit: "Dijital Ürün Tasarım ve Geliştirme",
+        topic: "Kelime İşlemci Programlarına Giriş",
+        type: "lesson",
+        summary: "Kelime işlemciler; bilgisayarda mektup, ödev, rapor, dilekçe, hikâye ve kitap gibi her türlü yazılı belgeyi hazırlamak, biçimlendirmek ve yazdırmak için kullanılan yazılımlardır. En çok bilinen kelime işlemciler Microsoft Word, açık kaynaklı LibreOffice Writer ve çevrimiçi çalışan Google Dokümanlar'dır. Bu programlarda metinler seçilerek yazı tipi (Font), yazı boyutu (Punto), yazı rengi değiştirilebilir; önemli başlıklar Kalın (Bold), İtalik (Eğik) veya Altı Çizili yapılabilir. Paragraflar sola, sağa, ortaya veya iki yana yaslanarak sayfa nizamı sağlanır.",
+        notebookNote: [
+          "<b>Kelime İşlemci:</b> Metin yazma, biçimlendirme ve belge hazırlama yazılımlarıdır (Word, LibreOffice Writer).",
+          "<b>Yazı Biçimlendirme:</b>",
+          "• <b>K (Bold):</b> Yazıyı koyu/kalın yapar.",
+          "• <i>T (İtalik):</i> Yazıyı yana eğik yapar.",
+          "• <u>A (Altı Çizili):</u> Yazının altına çizgi çeker.",
+          "<b>Punto:</b> Yazı harflerinin büyüklük derecesidir.",
+          "<b>Hizalama:</b> Metni Sola Yasla, Ortala, Sağa Yasla, İki Yana Yasla seçenekleridir."
+        ],
+        mediaTitle: "Microsoft Word'e Giriş ve Metin Düzenleme",
+        mediaDesc: "Yazı tipi, boyut değiştirme ve sayfa düzeni temel Word dersi.",
+        mediaUrl: "https://www.youtube.com/results?search_query=ortaokul+word+dersi+metin+bicimlendirme",
+        questions: [
+          { q: "Yazı yazmak, ödev hazırlamak ve belge düzenlemek için kullanılan programlara ne ad verilir?", a: "Kelime işlemci programları." },
+          { q: "En yaygın kullanılan kelime işlemci programına bir örnek veriniz.", a: "Microsoft Word (veya LibreOffice Writer / Google Dokümanlar)." },
+          { q: "Bir yazıyı seçip kalın (koyu) yapmak için hangi simgeye tıklanır?", a: "'K' (veya 'B' - Bold) simgesine." },
+          { q: "Yazıyı sayfanın tam ortasına hizalamak için hangi hizalama seçeneği kullanılır?", a: "Ortala seçeneği." },
+          { q: "Yazı tipinin büyüklüğünü ayarladığımız alana ne denir?", a: "Yazı boyutu (Punto)." }
+        ]
+      },
+      {
+        id: 13,
+        title: "13. Hafta",
+        dates: "07 - 13 Aralık",
+        unit: "Dijital Ürün Tasarım ve Geliştirme",
+        topic: "Kelime İşlemci Dosyası Geliştirme",
+        type: "lesson",
+        summary: "Bir kelime işlemci belgesini zenginleştirmek için sadece yazı yazmak yetmez; içeriği destekleyen görsel ve tablolar da eklenmelidir. Ekle menüsünden bilgisayarımızda kayıtlı fotoğraflar metne yerleştirilebilir ve etrafına metin sarılabilir. Ders programı, nöbet listesi ya da karşılaştırmalı bilgileri düzenlemek için satır ve sütunlardan oluşan Tablolar oluşturulur. Maddeli listeler için Madde İşaretleri ve Numaralandırma özellikleri kullanılır. Belge ilk defa kaydedilirken 'Farklı Kaydet' komutuyla isim ve kayıt yeri verilir; sonraki aşamalarda sadece 'Kaydet' (Ctrl + S) demek yeterlidir.",
+        notebookNote: [
+          "<b>Ekle Menüsü:</b> Belgeye resim, tablo, şekil, sayfa numarası ve simge eklemek için kullanılır.",
+          "<b>Tablo:</b> Bilgileri satır ve sütunlar halinde düzenli gösteren kutucuklar yapısıdır.",
+          "<b>Madde İşaretleri:</b> Listeleme yaparken maddelerin başına nokta veya simge koyar.",
+          "<b>Kayıt Kısayolu:</b> Belgeyi kaybetmemek için sık sık <b>Ctrl + S</b> kısayolu kullanılmalıdır.",
+          "<b>Tümünü Seç:</b> Belgedeki tüm metni aynı anda seçmek için <b>Ctrl + A</b> kısayolu kullanılır."
+        ],
+        mediaTitle: "Word'de Tablo Oluşturma ve Resim Ekleme",
+        mediaDesc: "Kelime işlemcide ödev kapağı, tablo ve resim ekleme uygulaması.",
+        mediaUrl: "https://www.youtube.com/results?search_query=word+tablo+ve+resim+ekleme+dersi",
+        questions: [
+          { q: "Kelime işlemci belgesine bilgisayardan bir fotoğraf eklemek için hangi menü kullanılır?", a: "Ekle (Insert) menüsü." },
+          { q: "Belgeye satır ve sütunlardan oluşan düzenli bilgiler eklemek için ne ekleriz?", a: "Tablo." },
+          { q: "Önemli maddeleri sıralarken başına nokta veya işaret koyma özelliğine ne denir?", a: "Madde işaretleri." },
+          { q: "Hazırladığımız belgeyi ilk kez kaydederken hangi komutu seçeriz?", a: "Farklı Kaydet (Save As)." },
+          { q: "Kelime işlemcide tüm metni seçmek için kullanılan kısayol nedir?", a: "Ctrl + A" }
+        ]
+      },
+      {
+        id: 14,
+        title: "14. Hafta",
+        dates: "14 - 20 Aralık",
+        unit: "Dijital Ürün Tasarım ve Geliştirme",
+        topic: "Sunum Programlarına Giriş",
+        type: "lesson",
+        summary: "Sunum programları; bir konuyu, projeyi ya da araştırma ödevini bir dinleyici topluluğuna görsel ve işitsel unsurlarla anlatmak için slaytlar hazırlamamızı sağlayan yazılımlardır. En popüler örneği Microsoft PowerPoint'tir. Sunum programındaki her bir beyaz sayfaya 'Slayt' adı verilir. Etkili bir sunumun altın kuralı: Slaytları asla upuzun yazılarla doldurmamaktır. Slaytlar sadece anahtar cümleleri ve maddeleri içermeli; bolca ilgili resim, grafik ve şemalarla desteklenmelidir. Konuşmacı slaytı okuyan değil, slayt üzerinden konuyu anlatan kişi olmalıdır. Hazırlanan sunum tam ekran gösterilmek istendiğinde F5 tuşu kullanılır.",
+        notebookNote: [
+          "<b>Sunum Programı:</b> Konuları slaytlar halinde dinleyicilere anlatmak için kullanılan araçtır (Örn: PowerPoint).",
+          "<b>Slayt:</b> Sunum dosyasını oluşturan her bir sayfadır.",
+          "<b>İyi Sunum Kuralı:</b> Sayfaya roman gibi uzun metin yazılmaz; kısa anahtar kelimeler ve bol görsel kullanılır.",
+          "<b>Yazı/Zemin Kuralı:</b> Yazılar arkadaki renkle çelişmeli ve en arkadaki öğrencinin dahi okuyabileceği büyüklükte olmalıdır.",
+          "<b>F5 Tuşu:</b> Sunumu en baştan tam ekran başlatır."
+        ],
+        mediaTitle: "PowerPoint Temelleri: Slayt Nasıl Hazırlanır?",
+        mediaDesc: "Ortaokul öğrencileri için etkili sunum hazırlama ve PowerPoint kullanımı.",
+        mediaUrl: "https://www.youtube.com/results?search_query=powerpoint+slayt+hazirlama+ortaokul",
+        questions: [
+          { q: "Bir konuyu topluluğa anlatmak ve slaytlar hazırlamak için kullanılan yazılımlara ne denir?", a: "Sunum programları." },
+          { q: "En çok kullanılan sunum programına bir örnek veriniz.", a: "Microsoft PowerPoint (veya Google Slaytlar)." },
+          { q: "Sunum programındaki her bir çalışma sayfasına ne ad verilir?", a: "Slayt." },
+          { q: "Slayt hazırlarken çok fazla uzun metin koymak doğru mudur?", a: "Hayır, kısa maddeler ve görseller tercih edilmelidir." },
+          { q: "Sunum dosyasını tam ekran olarak başlatmak için klavyeden hangi tuşa basılır?", a: "F5 tuşu." }
+        ]
+      },
+      {
+        id: 15,
+        title: "15. Hafta",
+        dates: "21 - 27 Aralık",
+        unit: "Dijital Ürün Tasarım / Bilgisayar Ağları",
+        topic: "Sunum Dosyası Oluşturma ve Bilgisayar Ağları",
+        type: "lesson",
+        summary: "Sunumlara profesyonellik katan en önemli unsurlar Slayt Geçişleri ve Nesne Animasyonlarıdır. Geçişler slayttan diğer slayta atlarken ekranda beliren görsel efektlerdir. Animasyonlar ise bir yazının ya da resmin slayta uçarak girmesini veya vurgulanmasını sağlar. Bu haftayla birlikte 'Bilgisayar Ağları' dünyasına da adım atıyoruz. Bilgisayar ağı; iki veya daha fazla bilgisayarın donanım, yazılım ve dosya paylaşmak amacıyla kablolu ya da kablosuz olarak birbirine bağlanmasıdır. Laboratuvardaki tek bir yazıcıyı ağ sayesinde 20 bilgisayarın birden kullanabilmesi buna harika bir örnektir.",
+        notebookNote: [
+          "<b>Geçiş Efekti:</b> Bir slayttan diğer slayta geçerken oluşan sahne hareketidir.",
+          "<b>Animasyon:</b> Slayt içindeki bir yazının veya resmin hareket ederek gelmesidir.",
+          "<b>Bilgisayar Ağı:</b> Bilgi ve aygıt (yazıcı vb.) paylaşmak için bilgisayarların birbirine bağlanmasıdır.",
+          "<b>Ağın Faydaları:</b> Ortak donanım kullanımı sağlar, dosya transferini saniyelere indirir, iletişim kurdurur."
+        ],
+        mediaTitle: "PowerPoint Animasyonları ve Bilgisayar Ağları",
+        mediaDesc: "Slaytlara hareket katma ve bilgisayar ağlarının çalışma prensibi.",
+        mediaUrl: "https://www.youtube.com/results?search_query=bilgisayar+aglari+nedir+ortaokul+bilisim",
+        questions: [
+          { q: "Slaytlar arasında geçerken oluşan görsel hareketlere ne ad verilir?", a: "Geçiş efekti." },
+          { q: "Slayttaki bir yazı veya resmin hareket ederek gelmesine ne ad verilir?", a: "Animasyon." },
+          { q: "İki veya daha fazla bilgisayarın birbirine bağlanarak bilgi paylaşmasına ne denir?", a: "Bilgisayar ağı." },
+          { q: "Okul bilgisayar laboratuvarındaki ağ hangi ağ türüne örnektir?", a: "Yerel Alan Ağı (LAN)." },
+          { q: "Dünya genelindeki tüm bilgisayarları birbirine bağlayan en büyük ağ hangisidir?", a: "İnternet (Geniş Alan Ağı - WAN)." }
+        ]
+      },
+      {
+        id: 16,
+        title: "16. Hafta",
+        dates: "28 Aralık - 03 Ocak",
+        unit: "Bilgisayar Ağları ve İletişim",
+        topic: "Bilgisayar Ağ Bileşenleri ve Bağlanma Yöntemleri",
+        type: "lesson",
+        summary: "Bir bilgisayar ağının kurulabilmesi için belirli donanım aygıtlarına ihtiyaç duyulur. Öncelikle her bilgisayarda bir Ağ Kartı (Ethernet kartı) bulunmalıdır. Kablolu bağlantılarda özel korumalı Ethernet Kablosu kullanılır. Çok sayıda bilgisayarın bulunduğu bir ortamda ağ trafiğini yönetmek ve kabloları tek noktada buluşturmak için Dağıtıcı (Switch/Hub) kullanılır. İnternet servis sağlayıcıdan gelen sinyalleri bilgisayarların anlayacağı dijital sinyale çeviren ve kablosuz yayın yapan aygıt ise Modemdir. Kablosuz bağlantı Wi-Fi ile sağlanırken, cihazlar arası yakın mesafeli aktarımlarda Bluetooth kullanılır.",
+        notebookNote: [
+          "<b>Ağ Kartı (Ethernet Kartı):</b> Bilgisayarın ağa bağlanmasını sağlayan iç donanımdır.",
+          "<b>Ethernet Kablosu:</b> Bilgisayarı modeme veya ağ anahtarına bağlayan kablodur.",
+          "<b>Dağıtıcı (Switch):</b> Ağdaki bilgisayarları birbirine bağlayan merkez köprü kutusudur.",
+          "<b>Modem:</b> İnternet sinyalini alıp cihazlara kablolu/kablosuz dağıtan cihazdır.",
+          "<b>Wi-Fi:</b> Radyo dalgalarıyla kablosuz internet bağlantısı sunan teknolojidir.",
+          "<b>Bluetooth:</b> Yakın mesafeli cihazların (kulaklık, telefon) kablosuz haberleşmesidir."
+        ],
+        mediaTitle: "Ağ Donanımları: Modem, Switch ve Ağ Kartı",
+        mediaDesc: "EBA Bilişim: İnternete nasıl bağlanırız? Ağ donanımları tanıtımı.",
+        mediaUrl: "https://www.youtube.com/results?search_query=ag+donanimlari+modem+switch+ethernet+ortaokul",
+        questions: [
+          { q: "Bilgisayarların ağa ve internete kablosuz bağlanmasını sağlayan aygıt nedir?", a: "Modem / Kablosuz Yönlendirici (Router)." },
+          { q: "Bilgisayarı modeme bağlamak için kullanılan mavi/gri kabloya ne ad verilir?", a: "Ethernet kablosu (Ağ kablosu)." },
+          { q: "Kablosuz internet bağlantısı teknolojisine verilen genel isim nedir?", a: "Wi-Fi." },
+          { q: "Yakın mesafedeki telefon ve cihazların kablosuz dosya aktarımı yaptığı teknoloji nedir?", a: "Bluetooth." },
+          { q: "Bir ağda birden fazla bilgisayarı birbirine bağlayan çoklu bağlantı kutusuna ne denir?", a: "Dağıtıcı (Switch / Hub)." }
+        ]
+      },
+      {
+        id: 17,
+        title: "17. Hafta",
+        dates: "04 - 10 Ocak",
+        unit: "Bilgisayar Ağları ve İletişim",
+        topic: "Ağ Türleri ve Bağlanma Teknolojileri",
+        type: "lesson",
+        summary: "Bilgisayar ağları kapsadıkları coğrafi büyüklüğe göre üç temel grupta incelenir: 1) LAN (Yerel Alan Ağı): Ev, sınıf veya okul gibi tek bir bina içindeki küçük ağlardır. 2) MAN (Metropol Alan Ağı): Bir ilçe veya şehri kapsayan orta ölçekli ağlardır (Örn: MOBESE kamera ağı). 3) WAN (Geniş Alan Ağı): Ülkeleri ve tüm dünyayı birbirine bağlayan devasa ağlardır. Dünyanın en büyük geniş alan ağı İNTERNET'tir. Kablolu bağlantılar kablosuza göre elektromanyetik dalgalardan etkilenmediği için çok daha hızlı, kesintisiz ve kararlıdır; kablosuz ağlar ise hareket özgürlüğü sunar.",
+        notebookNote: [
+          "<b>LAN (Yerel Alan Ağı):</b> Ev veya okul laboratuvarı gibi dar alanlardaki ağdır.",
+          "<b>MAN (Metropol Alan Ağı):</b> Bir şehri kapsayan ağlardır (Örn: Şehir polis kameraları).",
+          "<b>WAN (Geniş Alan Ağı):</b> Dünyayı saran dev ağdır; en büyük WAN <b>İnternet</b>'tir.",
+          "<b>Kablolu vs Kablosuz:</b> Kablolu ağlar daha hızlı ve kesintisizdir; kablosuz ağlar (Wi-Fi) ise konfor ve taşınabilirlik sağlar."
+        ],
+        mediaTitle: "Ağ Türleri Nelerdir? LAN, MAN, WAN Farkları",
+        mediaDesc: "Haritalar ve animasyonlarla bilgisayar ağı çeşitleri dersi.",
+        mediaUrl: "https://www.youtube.com/results?search_query=lan+man+wan+nedir+ortaokul+bilisim",
+        questions: [
+          { q: "Sadece tek bir bina veya oda içerisindeki küçük ağlara ne ad verilir?", a: "LAN (Yerel Alan Ağı)." },
+          { q: "Bir şehir veya tüm dünyayı kapsayan büyük ağlara ne ad verilir?", a: "WAN (Geniş Alan Ağı)." },
+          { q: "Kablolu internetin kablosuza göre en belirgin avantajı nedir?", a: "Daha hızlı ve daha kararlı/kesintisiz olması." },
+          { q: "İnternete bağlanabilmek için servis sağlayıcıların verdiği sinyalleri dijitale çeviren cihaz nedir?", a: "Modem." },
+          { q: "Ağ üzerindeki bir yazıcıyı sınıftaki tüm bilgisayarlar ortak kullanabilir mi?", a: "Evet, ağ paylaşımı sayesinde kullanılabilir." }
+        ]
+      },
+      {
+        id: 18,
+        title: "18. Hafta",
+        dates: "11 - 17 Ocak",
+        unit: "Bilgisayar Ağları ve İletişim",
+        topic: "İnternette Bilgi Kaynakları ve Arama Yöntemleri",
+        type: "lesson",
+        summary: "İnternet devasa bir kütüphanedir ancak içinde hem çok kıymetli bilgiler hem de çöplük sayılabilecek yanlış ve yanıltıcı içerikler barındırır. Aradığımız bilgiye hızlı ulaşmak için Google, Yandex, Bing gibi Arama Motorlarını kullanırız. Ancak her tıklanan web sitesindeki bilgi doğru kabul edilemez. Bir bilginin güvenilirliğini teyit etmek için sitenin uzantısına bakılmalıdır (.gov resmi devlettir, .edu/.k12 resmi eğitim kurumudur), sitenin yazarı ve güncellenme tarihi kontrol edilmeli ve en az 2-3 farklı kaynaktan çapraz doğrulama yapılmalıdır. Arama yaparken anahtar sözcükleri doğru seçmek bizi doğrudan doğru cevaba götürür.",
+        notebookNote: [
+          "<b>Arama Motoru:</b> İnternetteki milyarlarca sayfa arasından aradığımızı getiren sistemlerdir.",
+          "<b>Güvenilir Uzantılar:</b>",
+          "• <b>.gov.tr:</b> Resmi devlet kurumları (En güvenilir).",
+          "• <b>.edu.tr / .k12.tr:</b> Üniversiteler ve MEB okulları.",
+          "• <b>.org:</b> Kar amacı gütmeyen vakıf ve dernekler.",
+          "<b>Bilgi Teyidi:</b> İnternetteki bir bilgiye hemen inanılmaz; yazarının uzmanlığına bakılır ve başka sitelerden doğrulanır."
+        ],
+        mediaTitle: "İnternette Doğru ve Güvenilir Bilgiye Ulaşma",
+        mediaDesc: "EBA animasyonu: Sahte haberleri ayırt etme ve arama taktikleri.",
+        mediaUrl: "https://www.youtube.com/results?search_query=internette+dogru+bilgiye+ulasma+eba+animasyon",
+        questions: [
+          { q: "İnternette aradığımız konuları bulmamızı sağlayan Google, Yandex gibi sitelere ne denir?", a: "Arama motoru." },
+          { q: "İnternette bulduğumuz her bilgi kesinlikle doğru mudur?", a: "Hayır, farklı kaynaklardan teyit edilmelidir." },
+          { q: "Güvenilir eğitim ve okul sitelerinin web uzantısı hangisidir?", a: "k12.tr veya edu.tr" },
+          { q: "Resmi devlet sitelerinin web uzantısı hangisidir?", a: "gov.tr" },
+          { q: "Arama kutusuna birden fazla anahtar kelime yazmak arama sonucunu nasıl etkiler?", a: "Daha hedefe yönelik ve doğru sonuçlar getirir." }
+        ]
+      },
+      {
+        id: 19,
+        title: "19. Hafta",
+        dates: "18 - 24 Ocak",
+        unit: "Bilişim Etiği ve Siber Güvenlik",
+        topic: "Bilişim Etiği ve İlkeleri",
+        type: "lesson",
+        summary: "Gerçek hayatta görgü kuralları ve ahlak ilkeleri olduğu gibi sanal dünyada da uyulması gereken kurallar vardır; buna Bilişim Etiği (Netiket) denir. İnternette kimseye hakaret edilmemeli, küçük düşürücü sözler söylenmemeli ve tehdit edilmemelidir. Dijital ortamda başkalarını kasten üzmek, korkutmak veya lakap takmak 'Siber Zorbalık'tır ve cezai yaptırımları vardır. Başkalarının fotoğraflarını izinsiz çekip paylaşmak kişisel mahremiyet ihlalidir. Başkasının hazırladığı ödevi veya çizdiği resmi kendimiz yapmış gibi sunmak ise dijital hırsızlıktır (intihal). Ayrıca mesajlaşırken tüm harfleri BÜYÜK YAZMAK sanal ortamda bağırmak anlamına gelir.",
+        notebookNote: [
+          "<b>Bilişim Etiği:</b> İnternet kullanırken doğru, dürüst ve ahlaki davranış kurallarıdır.",
+          "<b>Siber Zorbalık:</b> Dijital araçlarla birine hakaret etmek, dışlamak veya korkutmaktır.",
+          "<b>Mahremiyet Kuralı:</b> Kimsenin fotoğrafı, videosu veya mesajı izinsiz paylaşılamaz.",
+          "<b>İntihal (Aşırma):</b> Başkasına ait fikir veya yazıyı kaynak belirtmeden çalmaktır.",
+          "<b>Yazışma Kuralı:</b> İnternette sürekli büyük harfle yazılmaz; bu karşı tarafa bağırmak sayılır."
+        ],
+        mediaTitle: "Bilişim Etiği ve Siber Zorbalık Nedir?",
+        mediaDesc: "MEB / EBA: Sanal dünyada ahlak kuralları ve siber zorbalıktan korunma.",
+        mediaUrl: "https://www.youtube.com/results?search_query=bilisim+etigi+ve+siber+zorbalik+ortaokul",
+        questions: [
+          { q: "İnternet ve bilgisayar kullanırken uyulması gereken ahlaki kurallara ne ad verilir?", a: "Bilişim etiği." },
+          { q: "Bir başkasının fotoğraflarını izinsiz internette paylaşmak doğru mudur?", a: "Hayır, kişisel mahremiyete ve etiğe aykırıdır." },
+          { q: "Bir başkasına ait yazıyı veya ödevi kendimiz yapmış gibi sunmaya ne denir?", a: "Aşırma (İntihal / Telif ihlali)." },
+          { q: "İnternette sohbet ederken neden büyük harflerle YAZMAMALIYIZ?", a: "Büyük harf bağırmak anlamına geldiği için kaba kabul edilir." },
+          { q: "İnternette başkalarına kırıcı, alaycı ve tehdit edici mesajlar atmaya ne ad verilir?", a: "Siber zorbalık." }
+        ]
+      },
+      {
+        id: 20,
+        title: "20. Hafta",
+        dates: "25 - 31 Ocak",
+        unit: "TATİL",
+        topic: "YARIYIL TATİLİ (1. Hafta)",
+        type: "holiday",
+        holidayDesc: "1. Dönem Yarıyıl Tatili (Sömestr) başlangıcı. Birinci dönemin yorgunluğunu atma zamanı! İyi tatiller!"
+      },
+      {
+        id: 21,
+        title: "21. Hafta",
+        dates: "01 - 07 Şubat",
+        unit: "TATİL",
+        topic: "YARIYIL TATİLİ (2. Hafta)",
+        type: "holiday",
+        holidayDesc: "Yarıyıl Tatili 2. haftası. İkinci döneme bol enerjiyle hazırlanıyoruz!"
+      },
+      {
+        id: 22,
+        title: "22. Hafta",
+        dates: "08 - 14 Şubat",
+        unit: "Bilişim Etiği ve Siber Güvenlik",
+        topic: "Dijital Ortamlarda Gizlilik ve Güvenlik",
+        type: "lesson",
+        summary: "Dijital dünyada kişisel hesaplarımızı ve cihazlarımızı siber tehlikelerden korumak için güvenlik tedbirleri almalıyız. En temel kalkanımız güçlü parolalardır. 123456 veya doğum tarihi gibi şifreler hackerlar tarafından saniyeler içinde kırılır. Güçlü bir şifre en az 8 karakter olmalı; büyük/küçük harf, rakam ve özel simgeler içermelidir. Bilgisayarımıza virüs (zararlı yazılım) bulaşmasını önlemek için güvenilir antivirüs yazılımları kullanılmalı ve düzenli güncellenmelidir. Ayrıca tanımadığımız adreslerden gelen 'Tebrikler hediye kazandınız' tarzı oltalama (phishing) maillerindeki linklere asla tıklanmamalıdır.",
+        notebookNote: [
+          "<b>Güçlü Parola Kriterleri:</b> En az 8 karakter, büyük harf, küçük harf, rakam ve sembol (!, ?, #).",
+          "<b>Kötü Amaçlı Yazılım (Malware/Virüs):</b> Bilgisayarı bozan veya bilgileri çalan zararlı kodlardır.",
+          "<b>Antivirüs:</b> Bilgisayarı tarayarak virüsleri bulan ve yok eden koruma yazılımıdır.",
+          "<b>Oltalama (Phishing):</b> Sahte mesajlarla kullanıcıların şifrelerini çalma tuzağıdır.",
+          "<b>Güvenli İnternet:</b> Ortak bilgisayarlarda işlem bitince mutlaka 'Güvenli Çıkış' yapılmalıdır."
+        ],
+        mediaTitle: "Güvenli İnternet Kullanımı ve Güçlü Parola Oluşturma",
+        mediaDesc: "EBA Siber Güvenlik: Virüsler, oltalama tuzakları ve şifre güvenliği.",
+        mediaUrl: "https://www.youtube.com/results?search_query=eba+guvenli+internet+guclu+parola+animasyon",
+        questions: [
+          { q: "Hesaplarımızı korumak için oluşturduğumuz şifre nasıl olmalıdır?", a: "Tahmin edilmesi zor, harf, rakam ve sembol içeren güçlü şifre olmalıdır." },
+          { q: "Doğum tarihi veya 123456 gibi şifreler neden güvenli değildir?", a: "Kolayca tahmin edilebilir ve kırılabilir." },
+          { q: "Bilgisayarımıza zarar veren kötü amaçlı yazılımlara genel olarak ne denir?", a: "Virüs (Zararlı yazılım / Malware)." },
+          { q: "Bilgisayarı virüslere karşı koruyan ve temizleyen güvenlik yazılımı nedir?", a: "Antivirüs programı." },
+          { q: "Tanımadığımız kişilerden gelen şüpheli e-posta bağlantılarına tıklamalı mıyız?", a: "Hayır, kesinlikle tıklamamalıyız (Oltalama tehlikesi)." }
+        ]
+      },
+      {
+        id: 23,
+        title: "23. Hafta",
+        dates: "15 - 21 Şubat",
+        unit: "Yapay Zekâ",
+        topic: "Yapay Zekâ Kullanım Alanları ve Alt Dalları",
+        type: "lesson",
+        summary: "Yapay zekâ tek bir teknolojiden ibaret olmayıp birçok gelişmiş alt dalı bünyesinde barındırır. Bilgisayarla Görme (Görüntü İşleme); bilgisayarın kamera aracılığıyla insan yüzünü, trafik levhasını ya da hastalıkları tanımasını sağlar. Doğal Dil İşleme (NLP); bilgisayarın insan gibi konuşulan dilleri anlamasını, cümle çevirisi yapmasını sağlar. Robotik; yapay zekânın fiziksel mekanik kollar ve sensörlerle harmanlanıp fabrikalarda veya cerrahi ameliyatlarda kullanılmasıdır. Harita programlarında en kısa ve trafikten uzak rotayı çizen navigasyonlar ile video izleme platformlarında karşımıza çıkan öneri algoritmaları bu zekânın günlük yansımalarıdır.",
+        notebookNote: [
+          "<b>Görüntü İşleme:</b> Bilgisayarın resim ve videoları insan gibi analiz edip tanımasıdır (Yüz tanıma, otonom araçlar).",
+          "<b>Doğal Dil İşleme (NLP):</b> Bilgisayarın insan dillerini anlaması ve tercüme etmesidir (Google Çeviri, sesli asistanlar).",
+          "<b>Öneri Sistemleri:</b> Kullanıcının beğenilerine göre müzik ve video tavsiye eden yapay zekâdır.",
+          "<b>Robotik:</b> Yapay zekâ kararlarının fiziksel robot bedenleriyle uygulanmasıdır."
+        ],
+        mediaTitle: "Yapay Zekânın Kullanım Alanları ve Robotlar",
+        mediaDesc: "Görüntü işleme, doğal dil işleme ve otonom araçlar dersi.",
+        mediaUrl: "https://www.youtube.com/results?search_query=yapay+zekanin+kullanim+alanlari+ortaokul",
+        questions: [
+          { q: "Yapay zekânın harita uygulamalarındaki temel görevi nedir?", a: "En hızlı ve trafiksiz rotayı hesaplamak." },
+          { q: "Alışveriş sitelerinin bize ilgimizi çekebilecek ürünler önermesi neye örnektir?", a: "Yapay zekâ öneri sistemlerine." },
+          { q: "Bilgisayarların insan gibi görselleri ve nesneleri tanımasını sağlayan yapay zekâ alt dalı nedir?", a: "Görüntü işleme (Bilgisayarla görme)." },
+          { q: "Sürücüsüz (otonom) otomobiller hangi yapay zekâ teknolojilerini kullanır?", a: "Sensörler, kameralar ve yapay zekâ karar mekanizmaları." },
+          { q: "Diller arasında anlık çeviri yapan akıllı araçlar yapay zekâ mıdır?", a: "Evet (Doğal dil işleme)." }
+        ]
+      },
+      {
+        id: 24,
+        title: "24. Hafta",
+        dates: "22 - 28 Şubat",
+        unit: "Yapay Zekâ",
+        topic: "Yapay Zekânın Çalışma Prensipleri",
+        type: "lesson",
+        summary: "Bir yapay zekânın zeki olmasını sağlayan şey peşin hükümlü kodlar değil, Makine Öğrenmesidir. Örneğin bir bilgisayara 'bu bir kedidir' diye binlerce kural yazamazsınız çünkü her kedinin rengi, kulağı ve duruşu farklıdır. Bunun yerine bilgisayara on binlerce farklı kedi ve köpek fotoğrafı verilir (Girdi). Yapay zekâ bu fotoğraflardaki ortak örüntüleri (bıyık, kulak yapısı) kendi kendine keşfeder. İşte bu sürece 'Model Eğitimi' denir. Eğitilen model önüne daha önce hiç görmediği bir kedi resmi geldiğinde yüksek bir yüzdeyle 'Bu bir kedidir' der (Çıktı). Ancak modele yanlış veya kalitesiz veri verilirse yapay zekâ da yanlış kararlar verir.",
+        notebookNote: [
+          "<b>Makine Öğrenmesi:</b> Bilgisayarın kuralları ezberlemek yerine verilerden öğrenip kendini geliştirmesidir.",
+          "<b>Girdi (Input):</b> Modele öğrenmesi için verilen fotoğraf, ses veya metin verileridir.",
+          "<b>Eğitim (Training):</b> Yapay zekânın veriler arasındaki benzerlikleri ve farklılıkları kavrama sürecidir.",
+          "<b>Çıktı (Output):</b> Modelin yaptığı tahmin veya ürettiği nihai cevaptır.",
+          "<b>Altın Kural:</b> Kalitesiz veri = Yanlış yapay zekâ sonuçları."
+        ],
+        mediaTitle: "Makine Öğrenmesi Nasıl Çalışır? (Eğlenceli Animasyon)",
+        mediaDesc: "Bilgisayarların verilerden nasıl öğrendiğini anlatan çizgi anlatım.",
+        mediaUrl: "https://www.youtube.com/results?search_query=makine+ogrenmesi+nedir+ortaokul+bilisim",
+        questions: [
+          { q: "Bir yapay zekânın kediyi köpekten ayırt edebilmesi için ilk olarak ne yapılır?", a: "Binlerce kedi ve köpek resmi gösterilerek eğitilir." },
+          { q: "Bilgisayarların verilerden öğrenerek deneyim kazanmasına ne denir?", a: "Makine öğrenmesi." },
+          { q: "Yapay zekâya verdiğimiz metin, resim veya ses gibi ilk bilgilere ne ad verilir?", a: "Girdi (Giriş verisi)." },
+          { q: "Yapay zekânın yaptığı hesaplama sonucu ürettiği cevaba ne denir?", a: "Çıktı (Sonuç)." },
+          { q: "Yapay zekâya yanlış veriler verilirse ne olur?", a: "Yanlış ve yanıltıcı çıktılar üretir." }
+        ]
+      },
+      {
+        id: 25,
+        title: "25. Hafta",
+        dates: "01 - 07 Mart",
+        unit: "Yapay Zekâ",
+        topic: "Yapay Zekâda Güvenlik ve Etik",
+        type: "lesson",
+        summary: "Yapay zekânın hızla gelişmesi yepyeni güvenlik ve ahlaki (etik) sorunları da beraberinde getirmiştir. En büyük tehlikelerden biri, bir insanın yüzünü ve sesini taklit ederek ona hiç söylemediği şeyleri söyleten sahte videolar yani 'Deepfake' teknolojisidir. Yapay zekâ araçlarıyla sohbet ederken şahsi sırlarımızı ve hassas kimlik bilgilerimizi paylaşmak veri sızıntılarına yol açabilir. Ayrıca yapay zekâ araçları bazen tamamen uydurma bilgiler üretebilir (Halüsinasyon). Bu yüzden okul ödevlerinde yapay zekâ tek kaynak olarak görülmemeli, verdiği bilgiler her zaman güvenilir kitap ve sitelerden doğrulanmalıdır.",
+        notebookNote: [
+          "<b>Yapay Zekâ Etiği:</b> Yapay zekânın insanlığa zarar vermeyecek şekilde adil ve dürüst tasarlanmasıdır.",
+          "<b>Deepfake:</b> Yapay zekâ ile üretilen sahte ses ve video manipülasyonlarıdır (Dolandırıcılık tehlikesi).",
+          "<b>Bilgi Doğrulama:</b> Yapay zekâ yanılabilir; sunduğu bilgi mutlaka güvenilir kaynaklardan kontrol edilmelidir.",
+          "<b>Ödev Ahlakı:</b> Tüm ödevi yapay zekâya yaptırmak tembelliktir ve dürüstlük ilkesine aykırıdır."
+        ],
+        mediaTitle: "Deepfake ve Yapay Zekânın Karanlık Yüzü",
+        mediaDesc: "Sahte videolara ve dezenformasyona karşı uyanık olma rehberi.",
+        mediaUrl: "https://www.youtube.com/results?search_query=deepfake+nedir+nasil+anlasilir+ortaokul",
+        questions: [
+          { q: "Yapay zekâ araçlarıyla sohbet ederken ev adresimizi veya T.C. kimlik numaramızı girmeli miyiz?", a: "Hayır, kişisel bilgiler kesinlikle girilmemelidir." },
+          { q: "Yapay zekâ kullanılarak başkasının sesi veya yüzü taklit edilerek yapılan sahte videolara ne ad verilir?", a: "Deepfake." },
+          { q: "Yapay zekânın ürettiği bilgilerin doğruluğunu kontrol etmeli miyiz?", a: "Evet, her zaman güvenilir kaynaklardan doğrulamalıyız." },
+          { q: "Ödevlerimizi tamamen yapay zekâya yaptırıp kendimiz yapmış gibi sunmak etik midir?", a: "Hayır, etik değildir; yapay zekâ sadece yardımcı araç olmalıdır." },
+          { q: "Yapay zekâ sistemleri tasarlanırken hangi değerler korunmalıdır?", a: "Adalet, insan hakları, tarafsızlık ve mahremiyet." }
+        ]
+      },
+      {
+        id: 26,
+        title: "26. Hafta",
+        dates: "08 - 14 Mart",
+        unit: "TATİL",
+        topic: "2. DÖNEM ARA TATİLİ & RAMAZAN BAYRAMI",
+        type: "holiday",
+        holidayDesc: "2. Dönem Ara Tatili ve Ramazan Bayramı tatili. Aileniz ve sevdiklerinizle huzurlu bir bayram ve tatil dileriz!"
+      },
+      {
+        id: 27,
+        title: "27. Hafta",
+        dates: "15 - 21 Mart",
+        unit: "Yapay Zekâ",
+        topic: "Yapay Zekâda Etik ve Sorumlu Kullanım",
+        type: "lesson",
+        summary: "Yapay zekâ teknolojilerini sorumlu bir şekilde kullanmak geleceğin bilinçli bireyleri olmanın ilk şartıdır. Yapay zekâ modelleri eğitilirken veri setinde ön yargılar varsa sistem de ayrımcılık yapabilir; bu yüzden mühendisler verinin tarafsız olmasına dikkat etmelidir. Sanat ve edebiyat dünyasında yapay zekânın başkalarının çizimlerini taklit etmesi telif hakkı tartışmalarını alevlendirmiştir. Bir yapay zekâya komut verirken (Prompt yazarken) net, nazik, açık ve amaca dönük ifadeler kullanılmalıdır. İnsan zekâsı yaratıcılığı ve vicdanı ile daima yapay zekânın yöneticisi ve denetleyicisi konumunda kalmalıdır.",
+        notebookNote: [
+          "<b>Veri Tarafsızlığı:</b> Yapay zekânın adil olması için her kesimden zengin ve doğru veriyle eğitilmesi gerekir.",
+          "<b>Telif Hakları:</b> Sanatçıların ve yazarların eserlerinin yapay zekâ tarafından izinsiz kullanılması etik değildir.",
+          "<b>Prompt Yazma Becerisi:</b> Yapay zekâya en doğru çıktıyı verdiren açık ve detaylı komut yazma sanatıdır.",
+          "<b>Geleceğin İnsanı:</b> Bilgisayara boyun eğen değil, yapay zekâyı insanlık yararına yöneten birey olmalıdır."
+        ],
+        mediaTitle: "Yapay Zekâ Etiği ve Geleceğin Meslekleri",
+        mediaDesc: "EBA / TÜBİTAK: Yapay zekâ dünyasında adalet ve telif hakları tartışması.",
+        mediaUrl: "https://www.youtube.com/results?search_query=yapay+zeka+etigi+ve+gelecek+ortaokul",
+        questions: [
+          { q: "Yapay zekâ kararlarında insanların güvenliğini tehlikeye atacak bir adım atabilir mi?", a: "Hayır, etik kurallar gereği insan güvenliği önceliklidir." },
+          { q: "Yapay zekâ araçlarının telifli sanatçı çizimlerini izinsiz kopyalaması hangi tartışmayı doğurur?", a: "Telif hakkı ve sanatçı emeğine saygı tartışmasını." },
+          { q: "Yapay zekâ sistemlerinin ayrımcılık yapmaması için neye dikkat edilmelidir?", a: "Eğitildiği veri setinin adil ve tarafsız olmasına." },
+          { q: "Kendi yapay zekâ promptlarımızı yazarken nasıl bir dil kullanmalıyız?", a: "Açık, anlaşılır ve kibar bir dil." },
+          { q: "Gelecekte yapay zekâ ile birlikte çalışacak insanların hangi becerisi daha değerli olacaktır?", a: "Yaratıcı ve eleştirel düşünme becerisi." }
+        ]
+      },
+      {
+        id: 28,
+        title: "28. Hafta",
+        dates: "22 - 28 Mart",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Problem Belirleme ve Algoritma Oluşturma",
+        type: "lesson",
+        summary: "Programlamanın temeli kod yazmak değil, mantıksal düşünmektir. Günlük hayatta karşılaştığımız ve çözülmesi gereken engellere 'Problem' denir. Bir problemi çözüme kavuşturmak için en baştan en sona kadar adım adım, eksiksiz ve sırayla yazılan çözüm yoluna 'Algoritma' denir. Bilgisayarlar aslında çok yetenekli ama kendi başına düşünemeyen varlıklardır; onlara ne yapacaklarını en ince ayrıntısına kadar söylemek gerekir. Bir algoritmanın iki temel şartı vardır: Mutlaka bir 'BAŞLA' adımıyla başlamalı ve bir 'BİTİR' adımıyla son bulmalıdır. Örneğin bir çay demleme ya da ayran yapma tarifi tam bir algoritmaya örnektir; adımların sırasını karıştırırsanız hedeflediğiniz sonuca ulaşamazsınız.",
+        notebookNote: [
+          "<b>Problem:</b> Çözülmesi gereken, insanı hedefe varmaktan alıkoyan engellerdir.",
+          "<b>Algoritma:</b> Bir problemi çözmek için baştan sona adım adım yazılan net çözüm basamaklarıdır.",
+          "<b>Kurallar:</b>",
+          "• Her algoritma <b>BAŞLA</b> ile başlar, <b>BİTİR</b> ile biter.",
+          "• Adımlar açık, net ve numaralandırılmış olmalıdır.",
+          "• Adımların sırası hayati önem taşır; sıralama bozulursa hata (bug) oluşur."
+        ],
+        mediaTitle: "Algoritma Nedir? Günlük Hayattan Örneklerle Anlatım",
+        mediaDesc: "EBA Çizgi Film: Algoritma mantığı ve adım adım problem çözme.",
+        mediaUrl: "https://www.youtube.com/results?search_query=algoritma+nedir+ortaokul+bilisim+eba",
+        questions: [
+          { q: "Çözülmesi gereken, insanı hedefe ulaşmaktan alıkoyan engellere ne ad verilir?", a: "Problem." },
+          { q: "Bir problemi çözmek için baştan sona adım adım yazılan çözüm planına ne denir?", a: "Algoritma." },
+          { q: "Bir algoritmanın her zaman bir ... ve ... adımı bulunmalıdır?", a: "'Başla' ve 'Bitir' adımı." },
+          { q: "Çay demleme veya kek yapma tarifi bir algoritmaya örnek gösterilebilir mi?", a: "Evet, sıralı işlem adımları içerdiği için örnektir." },
+          { q: "Algoritmada adımların sırasını karıştırmak sonucu nasıl etkiler?", a: "Problemin çözülememesine veya yanlış sonuçlanmasına neden olur." }
+        ]
+      },
+      {
+        id: 29,
+        title: "29. Hafta",
+        dates: "29 Mart - 04 Nisan",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Akış Şemaları ve Semboller",
+        type: "lesson",
+        summary: "Yazı ile hazırladığımız algoritma adımlarının uluslararası standart geometrik sembollerle görselleştirilmesine 'Akış Şeması' (Flowchart) denir. Akış şemaları algoritmanın çok daha hızlı ve kolay anlaşılmasını sağlar. Her geometrik şeklin kendine has bir görevi vardır: 'Başla' ve 'Bitir' adımları için Elips (oval) kullanılır. Sayı girmek ya da klavyeden bilgi istemek için Paralelkenar kullanılır. Toplama, çıkarma gibi matematiksel işlemler Dikdörtgen içine yazılır. 'Hava yağmurlu mu?' gibi bir koşul ya da karar gerektiren durumlar ise Eşkenar Dörtgen (baklava dilimi) ile gösterilir. İşlemlerin akış yönü Oklar ile bağlanır.",
+        notebookNote: [
+          "<b>Akış Şeması:</b> Algoritmanın geometrik şekillerle resmedilmesidir.",
+          "<b>Semboller ve Anlamları:</b>",
+          "• <b>Elips:</b> Başla ve Bitir.",
+          "• <b>Dikdörtgen:</b> İşlem, hesaplama (Örn: Toplam = A + B).",
+          "• <b>Paralelkenar:</b> Veri girişi / Klavyeden okuma.",
+          "• <b>Eşkenar Dörtgen (Baklava):</b> Karar/Şart (Evet/Hayır yolları ayrılır).",
+          "• <b>Oklar:</b> Akışın yönünü gösteren bağlantı çizgileridir."
+        ],
+        mediaTitle: "Akış Şeması Sembolleri ve Örnek Problemler",
+        mediaDesc: "Geometrik şekillerle adım adım akış diyagramı çizimi.",
+        mediaUrl: "https://www.youtube.com/results?search_query=akis+semasi+sembolleri+ortaokul+bilisim",
+        questions: [
+          { q: "Algoritma adımlarının geometrik şekillerle gösterilmesine ne ad verilir?", a: "Akış şeması (Flowchart)." },
+          { q: "Akış şemasında 'Başla' ve 'Bitir' adımları için hangi şekil kullanılır?", a: "Elips (veya Yuvarlak kenarlı dikdörtgen)." },
+          { q: "Akış şemasında hesaplama ve işlem adımları hangi şekille gösterilir?", a: "Dikdörtgen." },
+          { q: "Akış şemasında 'Hava yağmurlu mu?' gibi bir karar/şart durumu hangi şekille gösterilir?", a: "Eşkenar Dörtgen (Baklava dilimi)." },
+          { q: "İşlemlerin hangi yöne doğru aktığını gösteren çizgilere ne denir?", a: "Akış yön çizgileri / Oklar." }
+        ]
+      },
+      {
+        id: 30,
+        title: "30. Hafta",
+        dates: "05 - 11 Nisan",
+        unit: "ÖLÇME VE DEĞERLENDİRME",
+        topic: "2. DÖNEM 1. SINAV HAFTASI",
+        type: "exam",
+        examDesc: "Bu hafta 2. Dönem 1. Ortak Yazılı Sınav haftasıdır. Ağ bileşenleri, internette arama, siber güvenlik, bilişim etiği, yapay zekâ alt dalları, problem çözme ve algoritma/akış şeması konularından sınav uygulanır."
+      },
+      {
+        id: 31,
+        title: "31. Hafta",
+        dates: "12 - 18 Nisan",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Problem Çözme Süreçleri ve Algoritmik Düşünme",
+        type: "lesson",
+        summary: "Bilişimsel düşünme; sadece yazılımcıların değil, hayattaki her insanın öğrenmesi gereken modern bir problem çözme sanatıdır. Bu süreç 4 temel basamaktan oluşur: 1) Ayrıştırma (Decomposition): Çok büyük ve korkutucu görünen karmaşık bir problemi minik, kolay parçalara ayırmak. 2) Örüntü Tanıma: Parçalar arasındaki tekrar eden benzerlikleri ve kuralları bulmak. 3) Soyutlama (Abstraction): Problemin çözümü için gereksiz olan ayrıntıları eleyip sadece ana hedefe odaklanmak. 4) Algoritma Tasarımı: Sonuca götüren kusursuz işlem adımlarını hazırlamaktır. Bu adımlar öğrenildiğinde hiçbir problem çözümsüz kalmaz.",
+        notebookNote: [
+          "<b>Bilişimsel Düşünme Becerileri:</b>",
+          "• <b>Ayrıştırma:</b> Problemi küçük parçalara bölerek çözmeyi kolaylaştırmaktır.",
+          "• <b>Örüntü Tanıma:</b> Tekrar eden benzerlikleri keşfetmektir.",
+          "• <b>Soyutlama:</b> Önemsiz detayları göz ardı edip kritik noktalara odaklanmaktır.",
+          "• <b>Algoritmik Tasarım:</b> Adım adım çözüm yönergesi yazmaktır.",
+          "<b>Kuru Çalışma:</b> Algoritmanın kağıt üzerinde elle test edilmesidir."
+        ],
+        mediaTitle: "Bilişimsel Düşünme Nedir? 4 Temel Adım",
+        mediaDesc: "Ayrıştırma, örüntü ve soyutlama kavramlarının animasyonla anlatımı.",
+        mediaUrl: "https://www.youtube.com/results?search_query=bilisimsel+dusunme+nedir+ortaokul",
+        questions: [
+          { q: "Büyük ve karmaşık bir problemi küçük parçalara bölerek çözmeye ne denir?", a: "Ayrıştırma (Parçalara ayırma)." },
+          { q: "Farklı problemler arasındaki ortak noktaları ve benzerlikleri bulmaya ne denir?", a: "Örüntü tanıma." },
+          { q: "Gereksiz detayları atıp sadece önemli noktalara odaklanmaya ne ad verilir?", a: "Soyutlama." },
+          { q: "Bilgisayarın anlayacağı dilde adım adım mantık yürütme becerisine ne ad verilir?", a: "Bilişimsel (Algoritmik) düşünme." },
+          { q: "Hazırladığımız algoritmanın kağıt üzerinde adım adım denenmesine ne denir?", a: "Masaüstü testi (Kuru çalışma)." }
+        ]
+      },
+      {
+        id: 32,
+        title: "32. Hafta",
+        dates: "19 - 25 Nisan",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Algoritma Test Etme ve Hata Ayıklama",
+        type: "lesson",
+        summary: "Yazılan hiçbir algoritma veya bilgisayar oyunu ilk seferde kusursuz çalışmaz. Koddaki veya algoritmadaki mantık hatalarına 'Bug' (Böcek/Hata) denir. Bu terim, eski bilgisayarların içine kaçıp devreyi yakan gerçek bir güve böceğinden esinlenerek doğmuştur. Bu hataları adım adım izleyerek bulup düzeltme sürecine ise 'Debugging' (Hata Ayıklama) adı verilir. Bir labirent oyununda karakter duvardan geçiyorsa veya puan yanlış azalıyorsa panik yapılmaz; kodlar baştan itibaren tek tek incelenerek mantık hatası ayıklanır. Başarılı bir yazılımcının en büyük erdemi sabır ve vazgeçmemektir.",
+        notebookNote: [
+          "<b>Bug (Hata):</b> Bir algoritmada veya program kodunda oluşan mantık yanlışlıklarıdır.",
+          "<b>Debugging (Hata Ayıklama):</b> Koddaki hataları bulup adım adım tamir etme sanatıdır.",
+          "<b>Hata Çözme Yolu:</b> Kodlar çalıştırılmadan önce kağıt üstünde gözden geçirilir; her adımın ne sonuç ürettiği izlenir.",
+          "Hata yapmak öğrenmenin en doğal parçasıdır; yazılımcı sabırlı ve araştırmacı olmalıdır."
+        ],
+        mediaTitle: "Kodlama Dünyasında Bug ve Hata Ayıklama",
+        mediaDesc: "EBA / Scratch ile hataları bulma ve düzeltme teknikleri.",
+        mediaUrl: "https://www.youtube.com/results?search_query=hata+ayiklama+debugging+ortaokul+bilisim",
+        questions: [
+          { q: "Bir algoritmada veya kodda meydana gelen hataya bilişim dilinde ne denir?", a: "Bug (Böcek / Hata)." },
+          { q: "Algoritmadaki hataları bulup düzeltme işlemine ne ad verilir?", a: "Hata ayıklama (Debugging)." },
+          { q: "Algoritmamız beklediğimiz sonucu vermiyorsa ilk yapmamız gereken nedir?", a: "İşlem adımlarını sırayla baştan sona kontrol etmek." },
+          { q: "Bir labirentten çıkış algoritmasında duvara çarpan bir adım varsa ne yapılmalıdır?", a: "O adım silinip yön değiştirme adımı eklenmelidir." },
+          { q: "Hatalarla karşılaştığında bir programcının nasıl davranması gerekir?", a: "Sabırlı ve araştırmacı olmalı, pes etmemelidir." }
+        ]
+      },
+      {
+        id: 33,
+        title: "33. Hafta",
+        dates: "26 Nisan - 02 Mayıs",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Yazılım Geliştirme Süreci Bileşenleri",
+        type: "lesson",
+        summary: "Bir yazılım ya da mobil uygulama geliştirirken doğrudan bilgisayar başına geçip kod yazılmaz; profesyonel bir süreç takip edilir: 1) İhtiyaç Analizi ve Planlama: Programın ne yapacağı ve kimler tarafından kullanılacağı belirlenir. 2) Arayüz Tasarımı: Butonların, menülerin ve renklerin kullanıcıyı yormayacak şekilde çizilmesidir. 3) Kodlama: Tasarlanan uygulamanın algoritma bloklarıyla canlandırılmasıdır. 4) Test Aşaması: Farklı cihazlarda denenerek olası çökmelerin tespit edilmesidir. 5) Yayınlama ve Güncelleme: Kullanıcılardan gelen geri bildirimlere göre programın geliştirilmesidir.",
+        notebookNote: [
+          "<b>Yazılım Geliştirme Aşamaları:</b>",
+          "1. <b>Planlama:</b> Amacı ve kuralları belirleme.",
+          "2. <b>Tasarım (Arayüz):</b> Kullanıcının gördüğü ekranı ve butonları çizme.",
+          "3. <b>Kodlama:</b> Algoritmayı çalışan kod bloklarına dökme.",
+          "4. <b>Test:</b> Hataları deneme yoluyla bulma.",
+          "<b>Kullanıcı Dostu:</b> Arayüz sade, şık ve herkesin kolay anlayacağı şekilde tasarlanmalıdır."
+        ],
+        mediaTitle: "Bir Yazılım ve Oyun Nasıl Geliştirilir?",
+        mediaDesc: "Fikirden ürüne yazılım geliştirme sürecinin basamakları.",
+        mediaUrl: "https://www.youtube.com/results?search_query=yazilim+gelistirme+sureci+ortaokul",
+        questions: [
+          { q: "Yazılacak programın ne yapacağını belirleme aşamasına ne ad verilir?", a: "İhtiyaç analizi / Planlama." },
+          { q: "Programın ekran görünümünü ve kullanıcı butonlarını tasarlamaya ne denir?", a: "Arayüz tasarımı." },
+          { q: "Algoritmanın bilgisayarın anlayacağı kod bloklarına dönüştürülmesine ne denir?", a: "Kodlama (Programlama)." },
+          { q: "Yazılım bittikten sonra kullanıcılara sunulmadan önce ne yapılır?", a: "Test etme aşaması." },
+          { q: "Kullanıcıların yazılımı beğenmesi ve kolay kullanması için arayüz nasıl olmalıdır?", a: "Sade, anlaşılır ve renk uyumlu olmalıdır." }
+        ]
+      },
+      {
+        id: 34,
+        title: "34. Hafta",
+        dates: "03 - 09 Mayıs",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Yazılımda Kullanılan Temel Bileşenler",
+        type: "lesson",
+        summary: "Tüm programlama dillerinin omurgasını oluşturan 3 sihirli kavram vardır: Değişkenler, Döngüler ve Karar Yapıları. Değişken; bilgisayarın hafızasında açtığımız, içine sayı veya metin koyduğumuz ve oyun esnasında değeri değişebilen bir kutudur (Örn: Skor, Kalan Can, Süre). Döngü; aynı işlemi defalarca yapmak yerine bilgisayara 'bunu 10 kez yap' veya 'sürekli tekrarla' dediğimiz yapıdır. Karar Yapısı ise bir şarta bağlı çalışan mantıktır: 'Eğer can sıfır ise OYUN BİTTİ yaz' cümlesi bir karar yapısıdır. Bu üç temel taş kavrandığında dünya üzerindeki her türlü yazılım ve oyun üretilebilir.",
+        notebookNote: [
+          "<b>Değişken (Variable):</b> Değeri değişebilen bilgileri hafızada tutan kutudur (Skor, Can, Seviye).",
+          "<b>Döngü (Loop):</b> Belirli kodların istenen sayıda veya sürekli olarak yinelenmesidir.",
+          "<b>Karar/Şart Yapısı:</b> 'Eğer ... ise' kuralıdır; bir şart gerçekleştiğinde farklı bir kod çalıştırır.",
+          "<b>Girdi ve Çıktı:</b> Kullanıcıdan klavye ile alınan bilgi <b>Girdi</b>, ekranda beliren sonuç ise <b>Çıktı</b>dır."
+        ],
+        mediaTitle: "Kodlamanın Temelleri: Değişken, Döngü ve Şart",
+        mediaDesc: "EBA / Scratch örnekleriyle değişken ve döngü kavramları.",
+        mediaUrl: "https://www.youtube.com/results?search_query=degisken+dongu+ve+sart+yapisi+scratch",
+        questions: [
+          { q: "Programlama ortamında sayı veya kelime gibi bilgileri aklında tutan kutucuklara ne denir?", a: "Değişken (Variable)." },
+          { q: "Bir oyunda oyuncunun puanını tutmak için ne tür bir değişken açılır?", a: "'Puan' veya 'Skor' isimli sayısal değişken." },
+          { q: "Belirli işlemlerin tekrar tekrar çalıştırılmasını sağlayan yapıya ne ad verilir?", a: "Döngü (Tekrar)." },
+          { q: "Programda 'Eğer can sıfır ise oyunu bitir' cümlesi hangi mantık yapısıdır?", a: "Şart / Karar yapısı." },
+          { q: "Kullanıcının klavyeden girdiği metin yazılımda ne olarak adlandırılır?", a: "Girdi (Input)." }
+        ]
+      },
+      {
+        id: 35,
+        title: "35. Hafta",
+        dates: "10 - 16 Mayıs",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Blok Tabanlı Kodlamaya Giriş (Scratch vb.)",
+        type: "lesson",
+        summary: "Metin tabanlı dillerde virgül unuttuğunuzda program çalışmaz; bu yüzden kodlamaya eğlenceli ve hatasız bir şekilde Blok Tabanlı Programlama ile başlarız. Dünyada okulların bir numaralı tercihi MIT tarafından geliştirilen Scratch programıdır. Scratch'te kod yazmak legoları birbirine kenetlemek gibidir; sadece birbirine uyan bloklar birleşir. Scratch'in merkezinde kuklaların gösterilerini sergilediği beyaz bir Sahne (Stage), sağ altta seçebileceğimiz yüzlerce Kukla (Sprite), sol tarafta ise renklerine göre ayrılmış kod blokları yer alır. Projeyi başlatan sihirli düğme Yeşil Bayrak, durduran ise Kırmızı Butondur.",
+        notebookNote: [
+          "<b>Blok Tabanlı Programlama:</b> Renkli kod bloklarını sürükleyip birleştirerek yazılım üretme ortamıdır.",
+          "<b>Scratch:</b> Çocuklar için geliştirilmiş en popüler görsel kodlama platformudur.",
+          "<b>Kukla (Sprite):</b> Sahnede hareket eden karakterlerdir (Kedi, top, insan vb.).",
+          "<b>Sahne (Stage):</b> Kuklaların yer aldığı beyaz gösteri alanıdır.",
+          "<b>Yeşil Bayrak:</b> Kodları çalıştırma başlangıcıdır; <b>Kırmızı Buton:</b> Tüm kodları durdurur."
+        ],
+        mediaTitle: "Scratch ile İlk Adım: Arayüz ve Kuklalar",
+        mediaDesc: "Scratch'e giriş, kukla seçimi ve ilk yeşil bayrak kodlaması.",
+        mediaUrl: "https://www.youtube.com/results?search_query=scratch+nedir+nasil+kullanilir+ortaokul+bilisim",
+        questions: [
+          { q: "Kod yazmayı renkli blokları sürükleyip birleştirerek öğreten yazılımlara ne denir?", a: "Blok tabanlı programlama." },
+          { q: "Okullarda blok tabanlı kodlama için en sık kullanılan program hangisidir?", a: "Scratch (veya mBlock)." },
+          { q: "Scratch programında ekrandaki hareket eden karakterlere ne denir?", a: "Kukla (Sprite)." },
+          { q: "Scratch'te kuklaların üzerinde hareket ettiği alana ne denir?", a: "Sahne (Stage)." },
+          { q: "Scratch'te yeşil bayrak simgesi ne işe yarar?", a: "Yazılan kodları ve projeyi başlatmaya yarar." }
+        ]
+      },
+      {
+        id: 36,
+        title: "36. Hafta",
+        dates: "17 - 23 Mayıs",
+        unit: "TATİL & YAZILIM TASARIMI",
+        topic: "KURBAN BAYRAMI TATİLİ & 19 MAYIS",
+        type: "holiday",
+        holidayDesc: "17-18 Mayıs Kurban Bayramı ve 19 Mayıs Atatürk'ü Anma, Gençlik ve Spor Bayramı tatili. İyi bayramlar!"
+      },
+      {
+        id: 37,
+        title: "37. Hafta",
+        dates: "24 - 30 Mayıs",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Blok Tabanlı Ortamda Temel Hareket ve Ses Blokları",
+        type: "lesson",
+        summary: "Scratch'te kuklalarımıza hayat vermek için renkli blok gruplarını bir araya getiririz. Mavi Bloklar (Hareket): Kuklanın adım atmasını, dönmesini ve sahnedeki x-y koordinatlarına gitmesini sağlar. Karakterin sahne sınırından çıkıp kaybolmaması için 'Kenara geldiysen sektir' bloğu mutlaka eklenir. Mor Bloklar (Görünüm): Kuklanın konuşma baloncuğu çıkarmasını veya yürüyormuş gibi görünmesi için 'Sonraki Kılık' değiştirmesini sağlar. Pembe Bloklar (Ses): Kuklaya miyavlama, alkış veya fon müzikleri eklememizi sağlar. Döngü içine yerleştirilen '10 adım git' ve 'sonraki kılık' blokları karakterimize gerçek bir yürüyüş animasyonu kazandırır.",
+        notebookNote: [
+          "<b>Hareket Blokları (Mavi):</b> Adım atma, dönme ve yönelme kodlarıdır.",
+          "<b>Görünüm Blokları (Mor):</b> Konuşma balonu, kılık değiştirme ve büyüme/küçülme efektleridir.",
+          "<b>Ses Blokları (Pembe):</b> Projeye enstrüman ve ses efektleri ekler.",
+          "<b>Animasyon Mantığı:</b> '10 adım git' + 'Sonraki kılık' + '0.1 saniye bekle' birleşimi canlı yürüyüş sağlar.",
+          "<b>Kenara Geldiysen Sektir:</b> Kuklanın ekrandan kaçmasını engelleyen hayat kurtarıcı koddur."
+        ],
+        mediaTitle: "Scratch: Karakteri Yürütme ve Konuşturma",
+        mediaDesc: "Hareket, görünüm ve ses blokları ile ilk animasyon yapımı.",
+        mediaUrl: "https://www.youtube.com/results?search_query=scratch+karakter+yurutme+ve+konusturma+dersi",
+        questions: [
+          { q: "Scratch'te kuklayı ileri yürütmek için hangi blok kullanılır?", a: "'10 adım git' bloğu (Hareket)." },
+          { q: "Kuklanın konuşma baloncuğu çıkarmasını sağlayan bloklar hangi gruptadır?", a: "Görünüm (Mor) bloklarında." },
+          { q: "Projeye alkış veya miyavlama gibi sesler eklemek için hangi blok grubu kullanılır?", a: "Ses (Pembe) blokları." },
+          { q: "Kuklanın sahne dışına çıkmasını engellemek için hangi blok kullanılır?", a: "'Kenara geldiysen sektir' bloğu." },
+          { q: "Kuklaya yürüme hissi vermek için döngü içine hangi blok eklenir?", a: "'Sonraki kılık' bloğu." }
+        ]
+      },
+      {
+        id: 38,
+        title: "38. Hafta",
+        dates: "31 Mayıs - 06 Haziran",
+        unit: "ÖLÇME VE DEĞERLENDİRME",
+        topic: "2. DÖNEM 2. SINAV HAFTASI",
+        type: "exam",
+        examDesc: "Bu hafta 2. Dönem 2. Ortak Yazılı Sınav haftasıdır. Problem çözme teknikleri, hata ayıklama, yazılım bileşenleri ve blok tabanlı kodlama (Scratch) konularından yıl sonu sınavı uygulanır."
+      },
+      {
+        id: 39,
+        title: "39. Hafta",
+        dates: "07 - 13 Haziran",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Blok Tabanlı Proje Geliştirme ve Oyun Tasarımı",
+        type: "lesson",
+        summary: "Bu hafta öğrendiğimiz tüm kod bloklarını birleştirerek kendi interaktif oyunumuzu yapıyoruz: Örneğin gökten düşen elmaları sepetle yakalama oyunu! Sarı bloklardan 'Boşluk tuşuna basılınca' veya ok tuşlarıyla kuklayı yönetiyoruz. Turuncu 'Sürekli Tekrarla' döngüsünün içine 'Eğer sepete değiyor mu ise' Algılama şartını yerleştiriyoruz. Elma sepete her değdiğinde Değişkenler grubundan 'Skoru 1 kadar değiştir' kodunu çalıştırıp 'POP' sesi çaldırıyoruz. Hazırladığımız projeyi kaybetmemek için Dosya menüsünden 'Bilgisayarına Kaydet' seçeneğiyle .sb3 uzantısıyla bilgisayarımıza yedekliyoruz.",
+        notebookNote: [
+          "<b>Oyun Mekaniği:</b>",
+          "• Kontrol: Ok tuşlarına basılınca x veya y koordinatı değiştirilir.",
+          "• Algılama: '... değiyor mu?' bloğu çarpışmaları yakalar.",
+          "• Skor: Hedefe değdikçe değişken değeri artırılır.",
+          "• Oyun Sonu: Kalan can 0 olduğunda 'Tümünü Durdur' bloğu çalışır.",
+          "<b>Dosya Formatı:</b> Scratch projeleri <b>.sb3</b> uzantısıyla kaydedilir."
+        ],
+        mediaTitle: "Scratch ile Elma Toplama Oyunu Nasıl Yapılır?",
+        mediaDesc: "Adım adım skorlu ve sesli elma yakalama oyunu kodlama dersi.",
+        mediaUrl: "https://www.youtube.com/results?search_query=scratch+elma+toplama+oyunu+yapimi+ortaokul",
+        questions: [
+          { q: "Karakterin klavyedeki ok tuşlarıyla hareket etmesi için hangi olay bloğu kullanılır?", a: "'... tuşuna basılınca' bloğu." },
+          { q: "Bir topun sepete her değdiğinde skorun artması hangi algılama şartıyla yapılır?", a: "'Eğer sepete değiyor mu ise' şartıyla." },
+          { q: "Scratch'te tüm kodları durdurmak için hangi simgeye tıklanır?", a: "Kırmızı durdurma butonu." },
+          { q: "Hazırladığımız Scratch projesini bilgisayarımıza nasıl kaydederiz?", a: "Dosya menüsünden 'Bilgisayarına kaydet' seçeneği ile." },
+          { q: "Kendi oyunumuzu tasarlarken karakterleri kendimiz çizebilir miyiz?", a: "Evet, Scratch'in dahili çizim editörü ile çizebiliriz." }
+        ]
+      },
+      {
+        id: 40,
+        title: "40. Hafta",
+        dates: "14 - 20 Haziran",
+        unit: "Yazılım Tasarımı ve Programlama",
+        topic: "Proje Sunumu ve Akran Değerlendirmesi",
+        type: "lesson",
+        summary: "Koca bir eğitim-öğretim yılının sonuna yaklaşırken ürettiğimiz projeleri sınıftaki arkadaşlarımıza sunuyoruz. Bir projeyi anlatırken oyunun amacı, kuralları, kullanılan kod mantığı ve hangi zorlukların aşıldığı açıklanmalıdır. Arkadaşlarımızın projelerini deneyerek onlara 'Akran Değerlendirmesi' formlarıyla yapıcı geri bildirimler sunarız. Bilişim teknolojileri dersi bize sadece bilgisayar kullanmayı değil; analitik düşünmeyi, sabretmeyi, problem çözmeyi ve en önemlisi teknolojiyi tüketen değil, teknoloji ÜRETEN ve geliştiren bir nesil olma bilincini kazandırmıştır.",
+        notebookNote: [
+          "<b>Proje Sunumu:</b> Projenin amacını, kodlarını ve faydasını sınıfa etkili bir dille anlatmaktır.",
+          "<b>Akran Değerlendirmesi:</b> Arkadaşımızın çalışmasını inceleyip eksik ve güçlü yönlerini nezaketle bildirmektir.",
+          "<b>Yıllık Kazanım:</b> Bilişimsel düşünme, algoritmik problem çözme ve üretkenlik.",
+          "<b>Bilişim Misyonumuz:</b> Teknolojiyi bağımlı gibi tüketen değil; milletine faydalı yazılımlar üreten bireyler olmak!"
+        ],
+        mediaTitle: "Genç Bilişimciler: Teknoloji Üreten Gelecek",
+        mediaDesc: "Kodlama öğrenen çocukların geleceği ve teknoloji üretme vizyonu.",
+        mediaUrl: "https://www.youtube.com/results?search_query=turkiyenin+gelecegi+kodlama+ureten+cocuklar",
+        questions: [
+          { q: "Hazırladığımız projeyi sınıfa tanıtırken nelere yer vermeliyiz?", a: "Oyunun amacına, kurallarına ve kullandığımız kod bloklarına." },
+          { q: "Arkadaşımızın oyununu oynayıp ona fikirler vermeye ne denir?", a: "Akran değerlendirmesi / Geri bildirim." },
+          { q: "5. sınıf bilişim dersinde problem çözmeyi öğrenmek bize hayatta ne kazandırır?", a: "Olaylara mantıklı, planlı ve çözüm odaklı yaklaşma becerisi." },
+          { q: "Gelecekte iyi bir yazılımcı olmak için hangi alanda sürekli pratik yapmalıyız?", a: "Algoritma kurma ve kodlama alanında." },
+          { q: "Teknolojiyi tüketen değil, teknoloji ... bireyler olmalıyız?", a: "Üreten / Geliştiren." }
+        ]
+      },
+      {
+        id: 41,
+        title: "41. Hafta",
+        dates: "21 - 27 Haziran",
+        unit: "YIL SONU",
+        topic: "SOSYAL ETKİNLİK VE DÖNEM SONU",
+        type: "holiday",
+        holidayDesc: "Dönem sonu sosyal etkinlikleri, karne heyecanı ve yaz tatili başlangıcı! Bir yıl boyunca gösterdiğiniz emek için tebrikler. İyi tatiller!"
+      }
+    ];
+
+    const sidebarEl = document.getElementById('sidebar');
+    const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+    const weekListEl = document.getElementById('weekList');
+    const weekTitleEl = document.getElementById('weekTitle');
+    const weekDateEl = document.getElementById('weekDate');
+    const weekUnitEl = document.getElementById('weekUnit');
+    const weekTopicEl = document.getElementById('weekTopic');
+    const contentBodyEl = document.getElementById('contentBody');
+
+    // Açılır-Kapanır Sidebar Butonu
+    let isCollapsed = false;
+    toggleSidebarBtn.addEventListener('click', () => {
+      isCollapsed = !isCollapsed;
+      sidebarEl.classList.toggle('collapsed', isCollapsed);
+      toggleSidebarBtn.querySelector('span').innerText = isCollapsed ? "Haftalık Menüyü Aç" : "Haftalık Menüyü Kapat";
+    });
+
+    // Menüyü oluştur
+    weeksData.forEach((w) => {
+      const li = document.createElement('li');
+      li.className = 'week-item';
+      li.id = 'week-nav-' + w.id;
+
+      let badgeHtml = '';
+      if (w.type === 'exam') badgeHtml = '<span class="badge badge-exam">📝 Sınav Haftası</span>';
+      else if (w.type === 'holiday') badgeHtml = '<span class="badge badge-holiday">🏖️ Tatil</span>';
+
+      li.innerHTML = `
+        <div class="title">${w.title}: ${w.topic.substring(0, 24)}${w.topic.length > 24 ? '...' : ''}</div>
+        <div class="dates">📅 ${w.dates}</div>
+        ${badgeHtml}
+      `;
+
+      li.addEventListener('click', () => renderWeek(w.id));
+      weekListEl.appendChild(li);
+    });
+
+    // Haftayı ekrana çiz
+    function renderWeek(id) {
+      const week = weeksData.find(w => w.id === id);
+      if (!week) return;
+
+      document.querySelectorAll('.week-item').forEach(el => el.classList.remove('active'));
+      const activeNav = document.getElementById('week-nav-' + id);
+      if (activeNav) {
+        activeNav.classList.add('active');
+        activeNav.scrollIntoView({ block: 'nearest' });
+      }
+
+      weekTitleEl.innerText = `${week.title} (${week.dates})`;
+      weekDateEl.innerText = `Dönem Takvimi: ${week.dates}`;
+      weekUnitEl.innerText = `Ünite: ${week.unit}`;
+      weekTopicEl.innerText = `Konu: ${week.topic}`;
+
+      contentBodyEl.innerHTML = '';
+
+      if (week.type === 'exam') {
+        contentBodyEl.innerHTML = `
+          <div class="special-card exam">
+            <div class="special-title">📝 ${week.topic}</div>
+            <p class="special-desc">${week.examDesc}</p>
+          </div>
+        `;
+      } else if (week.type === 'holiday') {
+        contentBodyEl.innerHTML = `
+          <div class="special-card holiday">
+            <div class="special-title">🏖️ ${week.topic}</div>
+            <p class="special-desc">${week.holidayDesc}</p>
+          </div>
+        `;
+      } else {
+        // 1. Bölüm: Konu Özeti (2 Kat Geniş)
+        if (week.summary) {
+          const sumTitle = document.createElement('div');
+          sumTitle.className = 'section-title';
+          sumTitle.innerHTML = '📖 Hafta Konu Özeti (Detaylı Anlatım)';
+          contentBodyEl.appendChild(sumTitle);
+
+          const sumCard = document.createElement('div');
+          sumCard.className = 'summary-card';
+          sumCard.innerText = week.summary;
+          contentBodyEl.appendChild(sumCard);
+        }
+
+        // 2. Bölüm: Deftere Yazdırılacak Not
+        if (week.notebookNote && week.notebookNote.length > 0) {
+          const noteTitle = document.createElement('div');
+          noteTitle.className = 'section-title';
+          noteTitle.innerHTML = '✍️ Deftere Yazdırılacak Ders Notu';
+          contentBodyEl.appendChild(noteTitle);
+
+          const noteCard = document.createElement('div');
+          noteCard.className = 'notebook-card';
+          noteCard.innerHTML = `
+            <span class="badge-notebook">📌 Deftere Not Alınacak Bölüm</span>
+            <ul>
+              ${week.notebookNote.map(item => `<li>${item}</li>`).join('')}
+            </ul>
+          `;
+          contentBodyEl.appendChild(noteCard);
+        }
+
+        // 3. Bölüm: Zenginleştirilmiş İçerik (Eğitici Video)
+        if (week.mediaTitle) {
+          const mediaHeading = document.createElement('div');
+          mediaHeading.className = 'section-title';
+          mediaHeading.innerHTML = '🎬 Zenginleştirilmiş İçerik & Eğitici Video';
+          contentBodyEl.appendChild(mediaHeading);
+
+          const mediaCard = document.createElement('div');
+          mediaCard.className = 'media-card';
+          mediaCard.innerHTML = `
+            <div class="media-info">
+              <span class="media-title">${week.mediaTitle}</span>
+              <span class="media-desc">${week.mediaDesc}</span>
+            </div>
+            <a href="${week.mediaUrl}" target="_blank" rel="noopener noreferrer" class="btn-video">
+              ▶️ Videoyu İzle
+            </a>
+          `;
+          contentBodyEl.appendChild(mediaCard);
+        }
+
+        // 4. Bölüm: Açık Uçlu Haftalık Sorular
+        const qTitle = document.createElement('div');
+        qTitle.className = 'section-title';
+        qTitle.innerHTML = '❓ Haftanın Soruları (5 Soru / Kısa Cevaplı)';
+        contentBodyEl.appendChild(qTitle);
+
+        const wrap = document.createElement('div');
+        wrap.className = 'questions-wrapper';
+
+        week.questions.forEach((item, idx) => {
+          const card = document.createElement('div');
+          card.className = 'question-card';
+          card.innerHTML = `
+            <div class="q-header">
+              <span class="q-number">Soru ${idx + 1}</span>
+              <div class="q-text">${item.q}</div>
+            </div>
+            <details>
+              <summary>Cevabı Göster</summary>
+              <div class="answer-box">${item.a}</div>
+            </details>
+          `;
+          wrap.appendChild(card);
+        });
+
+        contentBodyEl.appendChild(wrap);
+      }
+    }
+
+    // İlk açılışta 1. haftayı yükle
+    renderWeek(1);
+  </script>
+</body>
+</html>
